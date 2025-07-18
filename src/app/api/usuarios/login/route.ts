@@ -2,7 +2,7 @@ import { db } from '../../../../lib/mysql'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'tu_secreto_super_seguro'
+const JWT_SECRET = process.env.JWT_SECRET!
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       return new Response(JSON.stringify({ success: false, error: 'Faltan datos' }), { status: 400 })
     }
 
-    const [rows] = await db.query('SELECT * FROM usuarios WHERE correo = ?', [correo])
+    const [rows] = await db.query('SELECT * FROM usuarios WHERE correo = ? AND estado = "ACTIVO"', [correo])
     const usuarios = rows as any[]
 
     if (usuarios.length === 0) {

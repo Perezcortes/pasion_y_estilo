@@ -5,9 +5,12 @@ import { fadeIn } from '../../lib/motion'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import Link from 'next/link'
+import { useAuth } from '../../context/AuthContext' // importamos contexto
+import { jwtDecode } from 'jwt-decode'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { setUser } = useAuth()   // accedemos a la función para actualizar usuario
   const [formData, setFormData] = useState({
     correo: '',
     password: ''
@@ -43,9 +46,26 @@ export default function LoginPage() {
         throw new Error(data.error || 'Error al iniciar sesión')
       }
 
-      // Guardar el token y redirigir
+      // Guardar token en localStorage
       localStorage.setItem('token', data.token)
-      router.push('/') // Cambia esta ruta según tu necesidad
+
+      // Decodificar token para obtener info del usuario
+      const decoded = jwtDecode<{ id: number; nombre: string; rol: string }>(data.token)
+
+      // Actualizar contexto con info del usuario
+      setUser({
+        id: decoded.id,
+        nombre: decoded.nombre,
+        rol: decoded.rol,
+      })
+
+      // Redirigir según rol
+      if (decoded.rol === 'CLIENTE') {
+        router.push('/')
+      } else {
+        router.push('/dashboard')
+      }
+      
     } catch (err: any) {
       setError(err.message)
     } finally {
