@@ -1,103 +1,168 @@
-import Image from "next/image";
+'use client'
+
+import { Parallax } from 'react-parallax'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import { Autoplay, Pagination, Navigation, EffectFade } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/effect-fade'
+import 'swiper/css/pagination'
+import 'swiper/css/navigation'
+import { motion } from 'framer-motion'
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const slides = [
+    {
+      id: 1,
+      title: 'Pasión y Estilo',
+      subtitle: 'Tu barbería futurista',
+      img: '/slider/slide1.jpg',
+      cta: 'Reserva ahora'
+    },
+    {
+      id: 2,
+      title: 'Cortes con Tecnología',
+      subtitle: 'Experiencia moderna y única',
+      img: '/slider/slide2.jpg',
+      cta: 'Nuestros servicios'
+    },
+    {
+      id: 3,
+      title: 'Fidelidad y Premios',
+      subtitle: 'Porque tu estilo merece reconocimiento',
+      img: '/slider/slide3.jpg',
+      cta: 'Únete al club'
+    },
+  ]
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const textVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.8,
+        ease: "easeOut" as const
+      }
+    }
+  }
+
+  return (
+    <main className="bg-[#0f0f0f] text-white relative">
+      <Swiper
+        modules={[Autoplay, Pagination, Navigation, EffectFade]}
+        effect="fade"
+        autoplay={{
+          delay: 5000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true
+        }}
+        pagination={{
+          clickable: true,
+          dynamicBullets: true,
+          renderBullet: (_, className) => {
+            return `<span class="${className} bg-indigo-500 opacity-80 hover:opacity-100 transition-opacity duration-300"></span>`
+          }
+        }}
+        navigation={{
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev',
+        }}
+        loop
+        speed={1000}
+        className="h-screen"
+      >
+        {slides.map(({ id, title, subtitle, img, cta }) => (
+          <SwiperSlide key={id}>
+            <Parallax
+              bgImage={img}
+              strength={500}
+              bgImageStyle={{
+                objectFit: 'cover',
+                width: '100%',
+                height: '100%',
+                filter: 'brightness(0.7)'
+              }}
+            >
+              <div className="h-screen w-full flex flex-col justify-center items-center text-center px-4 relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-0" />
+
+                <motion.div
+                  className="relative z-10 max-w-4xl mx-auto"
+                  initial="hidden"
+                  animate="visible"
+                  variants={textVariants}
+                >
+                  <h1 className="text-5xl md:text-7xl lg:text-8xl font-extrabold mb-4 tracking-tight leading-tight">
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-indigo-600">
+                      {title}
+                    </span>
+                  </h1>
+                  <p className="text-xl md:text-2xl lg:text-3xl font-light mb-8 text-gray-300">
+                    {subtitle}
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-indigo-500/30"
+                  >
+                    {cta}
+                  </motion.button>
+                </motion.div>
+              </div>
+            </Parallax>
+          </SwiperSlide>
+        ))}
+
+        <div className="swiper-button-next after:text-indigo-400 hover:after:text-indigo-300" />
+        <div className="swiper-button-prev after:text-indigo-400 hover:after:text-indigo-300" />
+      </Swiper>
+
+      {/* Sección de bienvenida debajo del slider */}
+      <section className="py-20 px-6 max-w-7xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-indigo-600">
+              Bienvenido a la Excelencia
+            </span>
+          </h2>
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+            Descubre la nueva era del cuidado masculino donde tradición y tecnología se fusionan para ofrecerte una experiencia única.
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            {
+              title: "Tecnología de Vanguardia",
+              description: "Equipamiento de última generación para resultados perfectos",
+              icon: "💈"
+            },
+            {
+              title: "Estilistas Expertos",
+              description: "Profesionales certificados con años de experiencia",
+              icon: "✂️"
+            },
+            {
+              title: "Productos Premium",
+              description: "Línea exclusiva de productos para el cuidado masculino",
+              icon: "🧴"
+            }
+          ].map((item, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              className="bg-gray-800/50 p-8 rounded-xl border border-gray-700 hover:border-indigo-500 transition-all duration-300"
+            >
+              <div className="text-4xl mb-4">{item.icon}</div>
+              <h3 className="text-2xl font-bold mb-2 text-white">{item.title}</h3>
+              <p className="text-gray-400">{item.description}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+    </main>
+  )
 }
