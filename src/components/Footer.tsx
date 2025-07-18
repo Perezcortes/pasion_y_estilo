@@ -136,8 +136,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto border-t border-gray-800 mt-12 pt-8 text-center text-sm text-gray-500">
         <p>
           © {new Date().getFullYear()} Pasión y Estilo. Todos los derechos reservados. | 
-          <Link href="/politicas" className="hover:text-gray-300 ml-2">Políticas de Privacidad</Link> | 
-          <Link href="/terminos" className="hover:text-gray-300 ml-2">Términos de Servicio</Link>
+          <Link href="/politica-privacidad" className="hover:text-gray-300 ml-2">Políticas de Privacidad</Link> | 
+          <Link href="/terminos-y-condiciones" className="hover:text-gray-300 ml-2">Términos de Servicio</Link>
         </p>
       </div>
     </footer>
