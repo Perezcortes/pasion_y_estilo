@@ -1,29 +1,40 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { fadeIn } from '../../lib/motion'
-import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import Link from 'next/link'
-import { useAuth } from '../../context/AuthContext' // importamos contexto
-import { jwtDecode } from 'jwt-decode'
+import { useRouter } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { fadeIn } from '../../lib/motion'
+
+type FormData = {
+  correo: string
+  password: string
+}
+
+type DecodedToken = {
+  id: number
+  nombre: string
+  rol: 'ADMIN' | 'BARBERO' | 'CLIENTE'
+}
 
 export default function LoginPage() {
-  const router = useRouter()
-  const { setUser } = useAuth()   // accedemos a la función para actualizar usuario
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     correo: '',
     password: ''
   })
-  const [loading, setLoading] = useState(false)
+
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  // Importa jwt-decode solo en cliente (dinámico)
+  const jwtDecode = (typeof window !== 'undefined') ? require('jwt-decode') : null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,40 +45,32 @@ export default function LoginPage() {
     try {
       const response = await fetch('/api/usuarios/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
 
       const data = await response.json()
 
-      if (!response.ok) {
+      if (!response.ok || !data.success) {
         throw new Error(data.error || 'Error al iniciar sesión')
       }
 
-      // Guardar token en localStorage
       localStorage.setItem('token', data.token)
 
-      // Decodificar token para obtener info del usuario
-      const decoded = jwtDecode<{ id: number; nombre: string; rol: string }>(data.token)
+      if (!jwtDecode) throw new Error('jwtDecode no está disponible')
 
-      // Actualizar contexto con info del usuario
-      setUser({
-        id: decoded.id,
-        nombre: decoded.nombre,
-        rol: decoded.rol,
-      })
+      const decoded: DecodedToken = jwtDecode(data.token)
+      console.log('[Login] Token decodificado:', decoded)
 
-      // Redirigir según rol
-      if (decoded.rol === 'CLIENTE') {
+      if (decoded.rol === 'ADMIN' || decoded.rol === 'BARBERO') {
+        router.push('/dashboard')
+      } else if (decoded.rol === 'CLIENTE') {
         router.push('/')
       } else {
-        router.push('/dashboard')
+        setError('Rol no válido')
       }
-      
     } catch (err: any) {
-      setError(err.message)
+      setError(err.message || 'Error inesperado')
     } finally {
       setLoading(false)
     }
@@ -190,7 +193,7 @@ export default function LoginPage() {
             </div>
           </form>
 
-          <motion.div 
+          <motion.div
             variants={fadeIn('up', 'spring', 0.6, 1)}
             className="mt-6"
           >

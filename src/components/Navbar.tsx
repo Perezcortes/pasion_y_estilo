@@ -1,135 +1,164 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
-import { Menu, X, User } from 'lucide-react'
+import Image from 'next/image'
+import { useState, useEffect, useRef } from 'react'
+import { Menu, X, User, LogOut, UserCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Navbar() {
-    const [isOpen, setIsOpen] = useState(false)
-    const [scrolled, setScrolled] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+  const [nombreCliente, setNombreCliente] = useState<string | null>(null)
+  const [submenuOpen, setSubmenuOpen] = useState(false)
 
-    useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > 10)
-        }
-        window.addEventListener('scroll', handleScroll)
-        return () => window.removeEventListener('scroll', handleScroll)
-    }, [])
+  const menuRef = useRef<HTMLDivElement>(null)
 
-    const toggleMenu = () => setIsOpen(!isOpen)
-
-    const navLinks = [
-        { name: 'Inicio', href: '/' },
-        { name: 'Servicios', href: '#servicios' },
-        { name: 'Citas', href: '#citas' },
-        { name: 'Blog', href: '#blog' },
-        { name: 'Contacto', href: '#contacto' },
-    ]
-
-    const mobileMenuVariants = {
-        hidden: { opacity: 0, height: 0 },
-        visible: {
-            opacity: 1,
-            height: "auto",
-            transition: {
-                duration: 0.3,
-                ease: "easeInOut" as const
-            }
-        },
-        exit: {
-            opacity: 0,
-            height: 0,
-            transition: {
-                duration: 0.3,
-                ease: "easeInOut" as const
-            }
-        }
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10)
     }
 
-    return (
-        <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-black/90 backdrop-blur-md py-2 shadow-xl' : 'bg-transparent py-4'}`}>
-            <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-                <Link href="/" className="text-2xl font-bold text-white tracking-wide">
-                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-indigo-600">
-                        Pasión<span className="text-white">&</span>Estilo
-                    </span>
-                </Link>
+    const nombre = localStorage.getItem('nombre')
+    const rol = localStorage.getItem('rol')
 
-                <nav className="hidden md:flex items-center space-x-8">
-                    {navLinks.map((link) => (
-                        <Link
-                            key={link.name}
-                            href={link.href}
-                            className="relative text-white hover:text-indigo-400 transition-colors duration-300 group"
-                        >
-                            {link.name}
-                            <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-indigo-500 transition-all duration-300 group-hover:w-full"></span>
-                        </Link>
-                    ))}
+    if (rol === '1' && nombre) {
+      setNombreCliente(nombre)
+    }
 
-                    <Link
-                        href="/login"
-                        className="flex items-center gap-2 ml-6 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-full transition-all duration-300"
-                    >
-                        <User size={18} />
-                        <span>Ingresar</span>
-                    </Link>
-                </nav>
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
-                <div className="flex items-center gap-4 md:hidden">
-                    <Link
-                        href="/login"
-                        className="p-2 rounded-full bg-indigo-600 hover:bg-indigo-700 transition-colors duration-300"
-                    >
-                        <User size={20} />
-                    </Link>
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setSubmenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
-                    <button
-                        className="text-white focus:outline-none"
-                        onClick={toggleMenu}
-                        aria-label="Menu"
-                    >
-                        {isOpen ? <X size={28} /> : <Menu size={28} />}
-                    </button>
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('nombre')
+    localStorage.removeItem('rol')
+    window.location.href = '/' // O puedes usar router.push('/')
+  }
+
+  const toggleMenu = () => setIsOpen(!isOpen)
+
+  const navLinks = [
+    { name: 'Inicio', href: '/' },
+    { name: 'Servicios', href: '#servicios' },
+    { name: 'Citas', href: '#citas' },
+    { name: 'Blog', href: '#blog' },
+    { name: 'Contacto', href: '#contacto' },
+  ]
+
+  return (
+    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? 'bg-black/80 backdrop-blur' : 'bg-transparent'} shadow-sm`}>
+      <div className="container mx-auto flex items-center justify-between px-4 py-3">
+        <Link href="/" className="flex items-center space-x-2">
+          <Image src="/logo.png" alt="Logo" width={40} height={40} />
+          <span className="text-white font-bold text-xl">Pasión y Estilo</span>
+        </Link>
+
+        <div className="hidden md:flex space-x-6">
+          {navLinks.map(link => (
+            <Link key={link.name} href={link.href} className="text-white hover:text-indigo-400 transition-colors duration-200">
+              {link.name}
+            </Link>
+          ))}
+        </div>
+
+        <div className="flex items-center ml-6">
+          {nombreCliente ? (
+            <div className="relative" ref={menuRef}>
+              <button
+                onClick={() => setSubmenuOpen(!submenuOpen)}
+                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-full text-white transition-all duration-300"
+              >
+                <UserCircle size={20} />
+                <span>{nombreCliente}</span>
+              </button>
+
+              {submenuOpen && (
+                <div className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 z-50">
+                  <Link
+                    href="/perfil"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+                    onClick={() => setSubmenuOpen(false)}
+                  >
+                    <User size={16} />
+                    Perfil
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 w-full hover:bg-gray-100"
+                  >
+                    <LogOut size={16} />
+                    Cerrar sesión
+                  </button>
                 </div>
+              )}
             </div>
+          ) : (
+            <Link
+              href="/login"
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-full text-white transition-all duration-300"
+            >
+              <User size={18} />
+              <span>Ingresar</span>
+            </Link>
+          )}
+        </div>
 
-            {/* Mobile Menu with Animation */}
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        variants={mobileMenuVariants}
-                        className="md:hidden overflow-hidden bg-black/95"
-                    >
-                        <div className="px-6 pb-4 pt-2">
-                            {navLinks.map((link) => (
-                                <Link
-                                    key={link.name}
-                                    href={link.href}
-                                    className="block py-3 text-white hover:text-indigo-400 transition-colors duration-300 border-b border-gray-800"
-                                    onClick={() => setIsOpen(false)}
-                                >
-                                    {link.name}
-                                </Link>
-                            ))}
-                            <div className="mt-4">
-                                <Link
-                                    href="/login"
-                                    className="flex items-center justify-center gap-2 w-full py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors duration-300"
-                                    onClick={() => setIsOpen(false)}
-                                >
-                                    <User size={18} />
-                                    <span>Ingresar</span>
-                                </Link>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </header>
-    )
+        <button onClick={toggleMenu} className="md:hidden text-white">
+          {isOpen ? <X size={28} /> : <Menu size={28} />}
+        </button>
+      </div>
+
+      {/* Menú móvil */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="md:hidden bg-black/90 backdrop-blur px-4 pt-4 pb-6"
+          >
+            {navLinks.map(link => (
+              <Link
+                key={link.name}
+                href={link.href}
+                onClick={() => setIsOpen(false)}
+                className="block text-white py-2"
+              >
+                {link.name}
+              </Link>
+            ))}
+
+            {nombreCliente ? (
+              <div className="mt-4 text-white font-semibold text-center">
+                ¡Hola, {nombreCliente}!
+              </div>
+            ) : (
+              <div className="mt-4">
+                <Link
+                  href="/login"
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors duration-300"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <User size={18} />
+                  <span>Ingresar</span>
+                </Link>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </nav>
+  )
 }
