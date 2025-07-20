@@ -11,30 +11,31 @@ type FormData = {
   password: string
 }
 
-type DecodedToken = {
-  id: number
-  nombre: string
-  rol: 'ADMIN' | 'BARBERO' | 'CLIENTE'
+type Rol = 'ADMIN' | 'BARBERO' | 'CLIENTE'
+
+interface MeResponse {
+  user: {
+    id: number
+    nombre: string
+    rol: Rol
+  } | null
 }
 
 export default function LoginPage() {
+  const router = useRouter()
+
   const [formData, setFormData] = useState<FormData>({
     correo: '',
     password: ''
   })
-
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
-
-  // Importa jwt-decode solo en cliente (dinámico)
-  const jwtDecode = (typeof window !== 'undefined') ? require('jwt-decode') : null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [e.target.name]: e.target.value
-    })
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,34 +44,61 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const response = await fetch('/api/usuarios/login', {
+      // 1) Hacer login
+      const res = await fetch('/api/usuarios/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        // IMPORTANTE: Enviar credenciales; Next las maneja con cookies set en respuesta
         body: JSON.stringify(formData)
       })
 
-      const data = await response.json()
+      const data = await res.json()
 
-      if (!response.ok || !data.success) {
+      if (!res.ok || !data.success) {
         throw new Error(data.error || 'Error al iniciar sesión')
       }
 
-      localStorage.setItem('token', data.token)
+      // 2) Obtener datos del usuario desde la cookie recién seteada
+      const meRes = await fetch('/api/auth/me', {
+        method: 'GET',
+        credentials: 'include', // para enviar la cookie en la petición
+      })
 
-      if (!jwtDecode) throw new Error('jwtDecode no está disponible')
+      if (!meRes.ok) {
+        throw new Error('No se pudieron obtener los datos del usuario.')
+      }
 
-      const decoded: DecodedToken = jwtDecode(data.token)
-      console.log('[Login] Token decodificado:', decoded)
+      const me: MeResponse = await meRes.json()
 
-      if (decoded.rol === 'ADMIN' || decoded.rol === 'BARBERO') {
-        router.push('/dashboard')
-      } else if (decoded.rol === 'CLIENTE') {
-        router.push('/')
-      } else {
-        setError('Rol no válido')
+      if (!me.user) {
+        throw new Error('Usuario no encontrado')
+      }
+
+      // 3) Guardar nombre/rol en localStorage para Navbar (NO guardamos token)
+      try {
+        localStorage.setItem('nombre', me.user.nombre)
+        localStorage.setItem('rol', me.user.rol)
+      } catch {
+        /* ignore storage errors */
+      }
+
+      // 4) Redirigir según rol
+      console.log('Usuario obtenido:', me.user);
+      switch (me.user.rol) {
+        case 'ADMIN':
+          router.push('/dashboard')
+          break
+        case 'BARBERO':
+          router.push('/dashboard')
+          break
+        case 'CLIENTE':
+          router.push('/')
+          break
+        default:
+          setError('Rol no válido')
       }
     } catch (err: any) {
-      setError(err.message || 'Error inesperado')
+      setError(err?.message || 'Error inesperado')
     } finally {
       setLoading(false)
     }
@@ -182,13 +210,33 @@ export default function LoginPage() {
               >
                 {loading ? (
                   <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 
+                           5.291A7.962 7.962 0 014 12H0c0 3.042 
+                           1.135 5.824 3 7.938l3-2.647z"
+                      />
                     </svg>
                     Procesando...
                   </span>
-                ) : 'Iniciar Sesión'}
+                ) : (
+                  'Iniciar Sesión'
+                )}
               </motion.button>
             </div>
           </form>

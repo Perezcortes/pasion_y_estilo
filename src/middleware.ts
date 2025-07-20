@@ -1,3 +1,5 @@
+export const runtime = 'nodejs'
+
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import jwt from 'jsonwebtoken'
@@ -13,14 +15,17 @@ export function middleware(request: NextRequest) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
     const { rol } = decoded
 
-    // Redirección según rol
+    // Control de acceso a /dashboard
     if (request.nextUrl.pathname === '/dashboard') {
-      if (rol === 'ADMIN') {
-        return NextResponse.redirect(new URL('/admin', request.url))
-      } else if (rol === 'BARBERO') {
-        return NextResponse.redirect(new URL('/barbero', request.url))
-      } else if (rol === 'CLIENTE') {
-        return NextResponse.redirect(new URL('/cliente', request.url))
+      if (rol === 'CLIENTE') {
+        return NextResponse.redirect(new URL('/', request.url))
+      }
+    }
+
+    // Puedes agregar más rutas protegidas según el rol
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+      if (rol !== 'ADMIN') {
+        return NextResponse.redirect(new URL('/', request.url))
       }
     }
 
@@ -31,5 +36,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard'], // puedes agregar más rutas protegidas aquí
+  matcher: ['/dashboard', '/admin/:path*'], // Protege rutas adicionales aquí
 }

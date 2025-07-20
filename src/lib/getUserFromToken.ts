@@ -13,7 +13,7 @@ export function getUserFromToken(): TokenPayload | null {
   if (!token) return null;
 
   try {
-    const decoded = jwt_decode<TokenPayload>(token);
+    const decoded = jwt_decode(token) as TokenPayload;
     return decoded;
   } catch (err) {
     console.error('Error decoding token:', err);
