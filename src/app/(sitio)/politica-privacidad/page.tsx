@@ -1,7 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { fadeIn, staggerContainer } from '../../lib/motion'
+import { fadeIn, staggerContainer } from '../../../lib/motion'
+import { Lock } from 'lucide-react'
 
 export default function PrivacyPage() {
   const privacyPolicies = [
@@ -67,7 +68,7 @@ export default function PrivacyPage() {
             className="bg-gray-900/80 p-5 sm:p-6 md:p-8 rounded-lg sm:rounded-xl border-l-4 border-red-500"
           >
             <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-purple-400 flex items-center">
-              <span className="mr-2 sm:mr-3">🔒</span>
+              <Lock size={20} className="mr-2 sm:mr-3 text-purple-400" /> {/* ← reemplazo del emoji */}
               {policy.title}
             </h2>
             <p className="text-sm sm:text-base text-gray-300 leading-relaxed">

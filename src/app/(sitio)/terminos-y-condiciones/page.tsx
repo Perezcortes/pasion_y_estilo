@@ -1,7 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { fadeIn, staggerContainer } from '../../lib/motion'
+import { fadeIn, staggerContainer } from '../../../lib/motion'
+import { Scissors } from 'lucide-react'
 
 export default function TermsPage() {
   const terms = [
@@ -66,8 +67,8 @@ export default function TermsPage() {
             variants={fadeIn('up', 'spring', index * 0.1, 1)}
             className="bg-gray-900/80 p-5 sm:p-6 md:p-8 rounded-lg sm:rounded-xl border-l-4 border-blue-500"
           >
-            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-red-400 flex items-center">
-              <span className="mr-2 sm:mr-3">✂️</span>
+            <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-red-400 flex items-center gap-2">
+              <Scissors className="w-5 h-5 text-red-400" />
               {term.title}
             </h2>
             <p className="text-sm sm:text-base text-gray-300 leading-relaxed">

@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { fadeIn } from '../../lib/motion'
+import { fadeIn } from '../../../lib/motion'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import Link from 'next/link'

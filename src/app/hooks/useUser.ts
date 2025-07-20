@@ -1,29 +1,35 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import jwtDecode from 'jwt-decode'
 
-interface DecodedToken {
+interface User {
   id: number
   nombre: string
   rol: 'CLIENTE' | 'ADMIN' | 'BARBERO'
-  exp: number
 }
 
 export function useUser() {
-  const [user, setUser] = useState<DecodedToken | null>(null)
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('token')
-    if (token) {
+    async function fetchUser() {
       try {
-        const decoded: DecodedToken = jwtDecode(token)
-        setUser(decoded)
-      } catch (e) {
+        const res = await fetch('/api/auth/me')
+        if (res.ok) {
+          const data = await res.json()
+          setUser(data.user)
+        } else {
+          setUser(null)
+        }
+      } catch {
         setUser(null)
+      } finally {
+        setLoading(false)
       }
     }
+    fetchUser()
   }, [])
 
-  return user
+  return { user, loading }
 }

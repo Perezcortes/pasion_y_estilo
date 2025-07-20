@@ -24,7 +24,7 @@ export default function NotFound() {
       >
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <div className="relative w-20 h-20">
+          <div className="relative w-40 h-45">
             <Image
               src="/logo.png"
               alt="Pasión y Estilo Barbería"

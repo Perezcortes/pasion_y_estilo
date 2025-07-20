@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { fadeIn } from '../../lib/motion'
+import { fadeIn } from '../../../lib/motion'
 
 type FormData = {
   correo: string
