@@ -4,7 +4,9 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
+import toast from 'react-hot-toast';
 import { fadeIn } from '../../../lib/motion'
+import { useAuth } from '../../../context/AuthContext'
 
 type FormData = {
   correo: string
@@ -22,6 +24,7 @@ interface MeResponse {
 }
 
 export default function LoginPage() {
+  const { setUser } = useAuth()
   const router = useRouter()
 
   const [formData, setFormData] = useState<FormData>({
@@ -38,7 +41,7 @@ export default function LoginPage() {
     }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
@@ -48,12 +51,10 @@ export default function LoginPage() {
       const res = await fetch('/api/usuarios/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // IMPORTANTE: Enviar credenciales; Next las maneja con cookies set en respuesta
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       })
 
       const data = await res.json()
-
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Error al iniciar sesión')
       }
@@ -61,7 +62,7 @@ export default function LoginPage() {
       // 2) Obtener datos del usuario desde la cookie recién seteada
       const meRes = await fetch('/api/auth/me', {
         method: 'GET',
-        credentials: 'include', // para enviar la cookie en la petición
+        credentials: 'include',
       })
 
       if (!meRes.ok) {
@@ -69,25 +70,24 @@ export default function LoginPage() {
       }
 
       const me: MeResponse = await meRes.json()
-
       if (!me.user) {
         throw new Error('Usuario no encontrado')
       }
 
-      // 3) Guardar nombre/rol en localStorage para Navbar (NO guardamos token)
-      try {
-        localStorage.setItem('nombre', me.user.nombre)
-        localStorage.setItem('rol', me.user.rol)
-      } catch {
-        /* ignore storage errors */
-      }
+      // 3) Guardar en localStorage
+      localStorage.setItem('nombre', me.user.nombre)
+      localStorage.setItem('rol', me.user.rol)
 
-      // 4) Redirigir según rol
-      console.log('Usuario obtenido:', me.user);
+      // 4) Actualizar el contexto para refrescar Navbar
+      setUser({ nombre: me.user.nombre, rol: me.user.rol })
+
+      toast.success(`Bienvenido, ${me.user.nombre}`, {
+        duration: 2500,
+      })
+
+      // 5) Redirigir según rol
       switch (me.user.rol) {
         case 'ADMIN':
-          router.push('/dashboard')
-          break
         case 'BARBERO':
           router.push('/dashboard')
           break

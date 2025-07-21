@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import toast from 'react-hot-toast';
 import { fadeIn } from '../../../lib/motion'
 import {
   FiCalendar,
@@ -44,6 +45,10 @@ export default function DashboardPage() {
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
+    toast.success(`Hasta luego, ${user?.nombre || 'usuario'}`, {
+      icon: '👋',
+      duration: 3000,
+    })
     router.push('/login')
   }
 
@@ -86,45 +91,40 @@ export default function DashboardPage() {
             <nav className="flex-1 space-y-2">
               <button
                 onClick={() => setActiveTab('dashboard')}
-                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg w-full transition-all ${
-                  activeTab === 'dashboard' ? 'bg-gradient-to-r from-red-600/30 to-purple-600/30 text-white border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-700'
-                }`}
+                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg w-full transition-all ${activeTab === 'dashboard' ? 'bg-gradient-to-r from-red-600/30 to-purple-600/30 text-white border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-700'
+                  }`}
               >
                 <FiPieChart className="mr-3" />
                 Resumen
               </button>
               <button
                 onClick={() => setActiveTab('appointments')}
-                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg w-full transition-all ${
-                  activeTab === 'appointments' ? 'bg-gradient-to-r from-red-600/30 to-purple-600/30 text-white border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-700'
-                }`}
+                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg w-full transition-all ${activeTab === 'appointments' ? 'bg-gradient-to-r from-red-600/30 to-purple-600/30 text-white border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-700'
+                  }`}
               >
                 <FiCalendar className="mr-3" />
                 Citas
               </button>
               <button
                 onClick={() => setActiveTab('clients')}
-                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg w-full transition-all ${
-                  activeTab === 'clients' ? 'bg-gradient-to-r from-red-600/30 to-purple-600/30 text-white border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-700'
-                }`}
+                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg w-full transition-all ${activeTab === 'clients' ? 'bg-gradient-to-r from-red-600/30 to-purple-600/30 text-white border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-700'
+                  }`}
               >
                 <FiUsers className="mr-3" />
                 Clientes
               </button>
               <button
                 onClick={() => setActiveTab('services')}
-                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg w-full transition-all ${
-                  activeTab === 'services' ? 'bg-gradient-to-r from-red-600/30 to-purple-600/30 text-white border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-700'
-                }`}
+                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg w-full transition-all ${activeTab === 'services' ? 'bg-gradient-to-r from-red-600/30 to-purple-600/30 text-white border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-700'
+                  }`}
               >
                 <FiScissors className="mr-3" />
                 Servicios
               </button>
               <button
                 onClick={() => setActiveTab('settings')}
-                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg w-full transition-all ${
-                  activeTab === 'settings' ? 'bg-gradient-to-r from-red-600/30 to-purple-600/30 text-white border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-700'
-                }`}
+                className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg w-full transition-all ${activeTab === 'settings' ? 'bg-gradient-to-r from-red-600/30 to-purple-600/30 text-white border-l-4 border-red-500' : 'text-gray-300 hover:bg-gray-700'
+                  }`}
               >
                 <FiSettings className="mr-3" />
                 Configuración
@@ -270,13 +270,12 @@ export default function DashboardPage() {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{appointment.barber}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            appointment.status === 'confirmada'
-                              ? 'bg-green-900/30 text-green-400'
-                              : appointment.status === 'pendiente'
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${appointment.status === 'confirmada'
+                            ? 'bg-green-900/30 text-green-400'
+                            : appointment.status === 'pendiente'
                               ? 'bg-yellow-900/30 text-yellow-400'
                               : 'bg-red-900/30 text-red-400'
-                          }`}
+                            }`}
                         >
                           {appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}
                         </span>
