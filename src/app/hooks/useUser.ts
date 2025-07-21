@@ -1,12 +1,8 @@
+// hooks/useUser.ts
 'use client'
 
 import { useEffect, useState } from 'react'
-
-interface User {
-  id: number
-  nombre: string
-  rol: 'CLIENTE' | 'ADMIN' | 'BARBERO'
-}
+import { User } from '../../types/types'
 
 export function useUser() {
   const [user, setUser] = useState<User | null>(null)
