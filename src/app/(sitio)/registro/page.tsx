@@ -5,6 +5,7 @@ import { fadeIn } from '../../../lib/motion'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import Link from 'next/link'
+import toast from 'react-hot-toast'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -61,7 +62,11 @@ export default function RegisterPage() {
       }
 
       // Redirigir al login después del registro exitoso
-      router.push('/login?registered=true')
+      toast.success('Registro exitoso!')
+      setTimeout(() => {
+        router.push('/login?registered=true')
+      }, 2000) // espera 2 segundos para que se vea el toast
+
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -254,7 +259,7 @@ export default function RegisterPage() {
             </div>
           </form>
 
-          <motion.div 
+          <motion.div
             variants={fadeIn('up', 'spring', 0.6, 1)}
             className="mt-6"
           >

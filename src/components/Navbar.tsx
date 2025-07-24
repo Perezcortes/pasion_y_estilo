@@ -53,7 +53,7 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Inicio', href: '/' },
     { name: 'Servicios', href: '#servicios' },
-    { name: 'Citas', href: '#citas' },
+    { name: 'Citas', href: '/citas' },
     { name: 'Blog', href: '#blog' },
     { name: 'Contacto', href: '#contacto' },
   ]

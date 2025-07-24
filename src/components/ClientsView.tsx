@@ -1,6 +1,7 @@
 'use client'
 
 import { useUser } from '../app/hooks/useUser'
+import ClientsManagement from './ClientsManagement' 
 
 export default function ClientsView() {
   const { user } = useUser()
@@ -16,9 +17,8 @@ export default function ClientsView() {
   return (
     <div className="bg-gray-800/70 rounded-xl p-6 border border-gray-700">
       <h2 className="text-lg font-semibold text-white mb-4">Gestión de Clientes</h2>
-      <div className="bg-gray-700/30 rounded-lg p-4 text-gray-400">
-        Lista de clientes (contenido solo visible para administradores)
-      </div>
+      {/* Aquí va el componente que muestra la tabla y formularios */}
+      <ClientsManagement />
     </div>
   )
 }
