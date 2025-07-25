@@ -126,17 +126,30 @@ export default function ServicesManagement() {
         }))
     }
 
-    const handleItemChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        const { name, value, type } = e.target
-        const checked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : undefined
+    const handleItemChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+    ) => {
+        const { name, value, type } = e.target;
 
-        setFormItemData(prev => ({
-            ...prev,
-            [name]: type === 'checkbox' ? checked :
-                name === 'precio' ? (value === '' ? null : Number(value)) :
-                    value
-        }))
-    }
+        setFormItemData(prev => {
+            let newValue: any;
+
+            if (type === 'checkbox') {
+                newValue = (e.target as HTMLInputElement).checked;
+            } else if (name === 'precio') {
+                newValue = value === '' ? null : parseFloat(value);
+            } else {
+                newValue = value;
+            }
+
+            console.log(`Cambio en ${name}:`, newValue);
+
+            return {
+                ...prev,
+                [name]: newValue
+            };
+        });
+    };
 
     const handleImageUpload = async (file: File): Promise<string> => {
         const formData = new FormData()
@@ -188,35 +201,72 @@ export default function ServicesManagement() {
     }
 
     const guardarItem = async (e: React.FormEvent) => {
-        e.preventDefault()
-        if (!formItemData.nombre || !formItemData.seccion_id) {
-            toast.error('Nombre y sección son requeridos')
-            return
+        e.preventDefault();
+
+        // Validación mejorada
+        if (!formItemData.nombre.trim()) {
+            toast.error('Por favor ingrese un nombre válido para el item');
+            return;
         }
 
+        // Verificar sección válida
+        const seccionId = itemEditando ? itemEditando.seccion_id : formItemData.seccion_id;
+        if (!seccionId || isNaN(seccionId)) {
+            toast.error('Seleccione una sección válida');
+            return;
+        }
+
+        const loadingToast = toast.loading(
+            itemEditando ? 'Actualizando item...' : 'Creando item...'
+        );
+
         try {
-            const method = itemEditando ? 'PUT' : 'POST'
-            const url = itemEditando ? `/api/items/${itemEditando.id}` : '/api/items'
+            const method = itemEditando ? 'PUT' : 'POST';
+            const url = itemEditando
+                ? `/api/items/${itemEditando.id}`
+                : '/api/items';
+
+            const payload = {
+                seccion_id: Number(seccionId),
+                nombre: formItemData.nombre.trim(),
+                descripcion: formItemData.descripcion || null,
+                precio: formItemData.precio !== null ? Number(formItemData.precio) : null,
+                imagen_url: formItemData.imagen_url || null,
+                archivo_pdf: formItemData.archivo_pdf || null,
+                es_destacado: Boolean(formItemData.es_destacado)
+            };
+
+            console.log('Enviando datos:', payload); // Debug
 
             const res = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formItemData)
-            })
+                body: JSON.stringify(payload)
+            });
 
-            const data = await res.json()
+            const data = await res.json();
 
-            if (data.success) {
-                toast.success(itemEditando ? 'Item actualizado' : 'Item creado')
-                cargarItems(formItemData.seccion_id)
-                setModalItemAbierto(false)
-            } else {
-                toast.error(data.error || 'Error al guardar')
+            if (!res.ok) {
+                throw new Error(data.error || `Error ${res.status}: ${res.statusText}`);
             }
-        } catch (error) {
-            toast.error('Error al conectar con el servidor')
+
+            toast.success(
+                itemEditando ? '✅ Item actualizado correctamente' : '✅ Item creado correctamente',
+                { id: loadingToast }
+            );
+
+            // Recargar los items de la sección
+            await cargarItems(seccionId);
+            cerrarModalItem();
+
+        } catch (error: any) {
+            console.error('Error al guardar item:', error);
+            toast.error(
+                error.message || '❌ Error al conectar con el servidor',
+                { id: loadingToast }
+            );
         }
-    }
+    };
 
     const editarSeccion = (seccion: Seccion) => {
         setSeccionEditando(seccion)
@@ -230,18 +280,19 @@ export default function ServicesManagement() {
     }
 
     const editarItem = (item: ItemSeccion) => {
-        setItemEditando(item)
+        console.log('Editando item:', item);
+        setItemEditando(item);
         setFormItemData({
             seccion_id: item.seccion_id,
-            nombre: item.nombre,
+            nombre: item.nombre || '',
             descripcion: item.descripcion || '',
-            precio: item.precio,
+            precio: item.precio !== null && !isNaN(item.precio) ? item.precio : null,
             imagen_url: item.imagen_url || '',
             archivo_pdf: item.archivo_pdf || '',
             es_destacado: item.es_destacado || false
-        })
-        setModalItemAbierto(true)
-    }
+        });
+        setModalItemAbierto(true);
+    };
 
     const mostrarConfirmacion = (titulo: string, mensaje: string, onConfirm: () => void, onCancel?: () => void) => {
         setConfirmacionData({
@@ -339,18 +390,19 @@ export default function ServicesManagement() {
     }
 
     const cerrarModalItem = () => {
-        setModalItemAbierto(false)
-        setItemEditando(null)
-        setFormItemData({
-            seccion_id: seccionSeleccionada || 0,
+        setModalItemAbierto(false);
+        // Resetear el formulario manteniendo la sección seleccionada
+        setFormItemData(prev => ({
+            seccion_id: seccionSeleccionada || prev.seccion_id,
             nombre: '',
             descripcion: '',
             precio: null,
             imagen_url: '',
             archivo_pdf: '',
             es_destacado: false
-        })
-    }
+        }));
+        setItemEditando(null);
+    };
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -563,7 +615,7 @@ export default function ServicesManagement() {
                 title={itemEditando ? 'Editar Item' : 'Nuevo Item'}
                 size="lg"
             >
-                <form onSubmit={guardarItem} onClick={(e) => e.stopPropagation()} className="space-y-4">
+                <form onSubmit={guardarItem} className="space-y-4">
                     <div>
                         <label className="block text-sm font-medium mb-1">Sección*</label>
                         <select
@@ -662,9 +714,11 @@ export default function ServicesManagement() {
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                            className={`px-4 py-2 text-white rounded transition ${loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                                }`}
+                            disabled={loading}
                         >
-                            Guardar
+                            {loading ? 'Guardando...' : 'Guardar'}
                         </button>
                     </div>
                 </form>
