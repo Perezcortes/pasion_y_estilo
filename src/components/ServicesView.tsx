@@ -1,6 +1,7 @@
 'use client'
 
 import { useUser } from '../app/hooks/useUser'
+import ServicesManagement from './ServicesManagement'
 
 export default function ServicesView() {
   const { user } = useUser()
@@ -18,6 +19,8 @@ export default function ServicesView() {
       <h2 className="text-lg font-semibold text-white mb-4">Gestión de Servicios</h2>
       <div className="bg-gray-700/30 rounded-lg p-4 text-gray-400">
         Lista de servicios (contenido solo visible para administradores)
+        <ServicesManagement />
+
       </div>
     </div>
   )
