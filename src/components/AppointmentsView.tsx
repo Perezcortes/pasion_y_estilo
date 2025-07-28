@@ -113,7 +113,7 @@ export default function AppointmentsView() {
       setUpdatingStatus(appointmentId)
       const token = localStorage.getItem('token') || ''
 
-      const res = await fetch(`/api/citas/${appointmentId}/estado`, {
+      const res = await fetch(`/api/citas/${appointmentId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -122,10 +122,9 @@ export default function AppointmentsView() {
         body: JSON.stringify({ estado: newStatus })
       })
 
-      const data = await res.json()
-
       if (!res.ok) {
-        throw new Error(data.error || 'Error al actualizar el estado')
+        const errorData = await res.json()
+        throw new Error(errorData.error || 'Error al actualizar el estado')
       }
 
       // Actualizar el estado localmente
@@ -140,15 +139,11 @@ export default function AppointmentsView() {
     } catch (error: any) {
       console.error('Error updating status:', error)
       toast.error(error.message || 'Error al actualizar el estado')
-
-      // Revertir el cambio en la UI si falla
-      setAppointments(prev => [...prev])
-      setFilteredAppointments(prev => [...prev])
     } finally {
       setUpdatingStatus(null)
     }
   }
-  
+
   // Aplicar filtros y búsqueda
   useEffect(() => {
     let result = [...appointments]
@@ -278,10 +273,10 @@ export default function AppointmentsView() {
                 {user?.rol === 'ADMIN' ? (
                   <select
                     className={`px-2 py-1 text-xs rounded-full appearance-none ${appointment.estado === 'CONFIRMADA' ? 'bg-green-900/30 text-green-400' :
-                        appointment.estado === 'PENDIENTE' ? 'bg-yellow-900/30 text-yellow-400' :
-                          appointment.estado === 'CANCELADA' ? 'bg-red-900/30 text-red-400' :
-                            appointment.estado === 'COMPLETADA' ? 'bg-blue-900/30 text-blue-400' :
-                              'bg-gray-900/30 text-gray-400'
+                      appointment.estado === 'PENDIENTE' ? 'bg-yellow-900/30 text-yellow-400' :
+                        appointment.estado === 'CANCELADA' ? 'bg-red-900/30 text-red-400' :
+                          appointment.estado === 'COMPLETADA' ? 'bg-blue-900/30 text-blue-400' :
+                            'bg-gray-900/30 text-gray-400'
                       }`}
                     value={appointment.estado}
                     onChange={(e) => handleStatusChange(appointment.id, e.target.value as EstadoKeys)}
@@ -300,10 +295,10 @@ export default function AppointmentsView() {
                   </select>
                 ) : (
                   <span className={`px-2 py-1 text-xs rounded-full ${appointment.estado === 'CONFIRMADA' ? 'bg-green-900/30 text-green-400' :
-                      appointment.estado === 'PENDIENTE' ? 'bg-yellow-900/30 text-yellow-400' :
-                        appointment.estado === 'CANCELADA' ? 'bg-red-900/30 text-red-400' :
-                          appointment.estado === 'COMPLETADA' ? 'bg-blue-900/30 text-blue-400' :
-                            'bg-gray-900/30 text-gray-400'
+                    appointment.estado === 'PENDIENTE' ? 'bg-yellow-900/30 text-yellow-400' :
+                      appointment.estado === 'CANCELADA' ? 'bg-red-900/30 text-red-400' :
+                        appointment.estado === 'COMPLETADA' ? 'bg-blue-900/30 text-blue-400' :
+                          'bg-gray-900/30 text-gray-400'
                     }`}>
                     {formatStatus(appointment.estado)}
                   </span>
