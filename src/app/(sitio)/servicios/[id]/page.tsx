@@ -26,8 +26,8 @@ interface ItemSeccion {
 
 function ItemCard({ item }: { item: ItemSeccion }) {
   return (
-    <div className="border border-gray-700 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-gray-800 hover:bg-gray-750">
-      <div className="relative aspect-square bg-gray-700">
+    <div className="border border-gray-700 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-gray-800 hover:bg-gray-750 h-full flex flex-col">
+      <div className="relative aspect-square bg-gray-700 flex-shrink-0">
         {item.imagen_url ? (
           <Image
             src={item.imagen_url}
@@ -45,13 +45,13 @@ function ItemCard({ item }: { item: ItemSeccion }) {
           </div>
         )}
       </div>
-      <div className="p-6">
+      <div className="p-4 flex-grow flex flex-col">
         <h3 className="text-lg font-semibold mb-2 text-white">{item.nombre}</h3>
         {item.descripcion && (
-          <p className="text-gray-300 mb-3 line-clamp-2">{item.descripcion}</p>
+          <p className="text-gray-300 mb-3 flex-grow">{item.descripcion}</p>
         )}
         
-        <div className="flex justify-between items-center mt-4">
+        <div className="flex justify-between items-center mt-auto pt-4">
           <span className="text-lg font-bold text-white">
             {item.precio !== null ? `$${item.precio.toFixed(2)}` : "Consultar precio"}
           </span>
@@ -85,9 +85,9 @@ function ItemCard({ item }: { item: ItemSeccion }) {
 
 function ItemSkeleton() {
   return (
-    <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-800">
+    <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-800 h-full">
       <Skeleton className="aspect-square w-full bg-gray-700" />
-      <div className="p-6 space-y-3">
+      <div className="p-4 space-y-3">
         <Skeleton className="h-6 w-3/4 bg-gray-700" />
         <Skeleton className="h-4 w-full bg-gray-700" />
         <Skeleton className="h-4 w-2/3 bg-gray-700" />
@@ -149,8 +149,8 @@ export default function SeccionDetallePage() {
             <Skeleton className="aspect-video w-full bg-gray-800 rounded-lg" />
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
               <ItemSkeleton key={i} />
             ))}
           </div>
@@ -186,6 +186,15 @@ export default function SeccionDetallePage() {
             Volver a servicios
           </Link>
         </div>
+
+        <style jsx global>{`
+          @import url('https://fonts.googleapis.com/css2?family=Jolly+Lodger&display=swap');
+
+          .jolly {
+            font-family: 'Jolly Lodger', cursive;
+            letter-spacing: 1px;
+          }
+        `}</style>
       </main>
     )
   }
@@ -194,7 +203,7 @@ export default function SeccionDetallePage() {
     return (
       <main className="min-h-screen pt-40 pb-12 bg-gray-900">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Sección no encontrada</h1>
+          <h1 className="text-2xl font-bold text-white mb-4 jolly">Sección no encontrada</h1>
           <Link 
             href="/servicios" 
             className="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors"
@@ -205,6 +214,15 @@ export default function SeccionDetallePage() {
             Volver a servicios
           </Link>
         </div>
+
+        <style jsx global>{`
+          @import url('https://fonts.googleapis.com/css2?family=Jolly+Lodger&display=swap');
+
+          .jolly {
+            font-family: 'Jolly Lodger', cursive;
+            letter-spacing: 1px;
+          }
+        `}</style>
       </main>
     )
   }
@@ -227,10 +245,10 @@ export default function SeccionDetallePage() {
             Volver a todos los servicios
           </Link>
           
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">{seccion.nombre}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-6 jolly">{seccion.nombre}</h1>
           
           {seccion.imagen_url && (
-            <div className="relative aspect-video w-full rounded-lg overflow-hidden mb-8 bg-gray-800">
+            <div className="relative aspect-video w-full max-w-4xl mx-auto rounded-lg overflow-hidden mb-8 bg-gray-800">
               <Image
                 src={seccion.imagen_url}
                 alt={seccion.nombre}
@@ -268,8 +286,8 @@ export default function SeccionDetallePage() {
         {/* Items destacados */}
         {itemsDestacados.length > 0 && (
           <section className="mb-12">
-            <h2 className="text-2xl font-bold text-white mb-8 pb-2 border-b border-gray-800">Destacados</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 pb-2 border-b border-gray-800 jolly">Destacados</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {itemsDestacados.map(item => (
                 <ItemCard key={item.id} item={item} />
               ))}
@@ -279,12 +297,12 @@ export default function SeccionDetallePage() {
 
         {/* Items normales */}
         <section>
-          <h2 className="text-2xl font-bold text-white mb-8 pb-2 border-b border-gray-800">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 pb-2 border-b border-gray-800 jolly">
             {seccion.tipo === 'servicio' ? 'Nuestros Servicios' : 'Nuestros Productos'}
           </h2>
           
           {itemsNormales.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {itemsNormales.map(item => (
                 <ItemCard key={item.id} item={item} />
               ))}
@@ -314,6 +332,15 @@ export default function SeccionDetallePage() {
           )}
         </section>
       </div>
+
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Jolly+Lodger&display=swap');
+
+        .jolly {
+          font-family: 'Jolly Lodger', cursive;
+          letter-spacing: 1px;
+        }
+      `}</style>
     </main>
   )
 }

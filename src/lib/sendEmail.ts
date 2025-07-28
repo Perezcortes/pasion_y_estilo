@@ -1,7 +1,14 @@
 // utils/sendEmail.ts
 import nodemailer from 'nodemailer';
 
-export async function sendEmail(to: string, subject: string, html: string) {
+interface EmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
+}
+
+export async function sendEmail(options: EmailOptions) {
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT),
@@ -14,8 +21,9 @@ export async function sendEmail(to: string, subject: string, html: string) {
 
   await transporter.sendMail({
     from: `"Pasión y Estilo" <${process.env.SMTP_USER}>`,
-    to,
-    subject,
-    html,
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
+    text: options.text || options.html.replace(/<[^>]*>/g, ''),
   });
 }

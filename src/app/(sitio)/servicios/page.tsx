@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Skeleton } from '../../../components/ui/skeleton'
+import { motion } from 'framer-motion'
+import './styles.css'
 
 interface Seccion {
   id: number
@@ -25,13 +27,13 @@ export default function ServiciosPage() {
         setLoading(true)
         setError(null)
         const res = await fetch('/api/secciones')
-        
+
         if (!res.ok) {
           throw new Error('No se pudieron cargar las secciones')
         }
-        
+
         const { data } = await res.json()
-        
+
         if (data && Array.isArray(data)) {
           setSecciones(data)
         } else {
@@ -44,26 +46,86 @@ export default function ServiciosPage() {
         setLoading(false)
       }
     }
-    
+
     cargarSecciones()
   }, [])
 
+  // Animaciones
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  }
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0 }
+  }
+
   return (
     <main className="min-h-screen pt-40 pb-12 bg-gray-900">
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Jolly+Lodger&display=swap');
+
+        .jolly {
+          font-family: 'Jolly Lodger', cursive;
+          letter-spacing: 1px;
+        }
+      `}</style>
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Encabezado */}
-        <div className="text-center mb-12 pt-6">
-          <h1 className="text-4xl font-bold text-white mb-4">
-            Nuestros Servicios y Productos
-          </h1>
-          <p className="text-lg text-gray-300 max-w-3xl mx-auto">
-            Descubre todo lo que tenemos para ofrecerte. Selecciona una categoría para explorar.
-          </p>
-        </div>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={{
+            hidden: { opacity: 0, x: -100 },
+            visible: {
+              opacity: 1,
+              x: 0,
+              transition: { duration: 0.8, ease: 'easeOut' }
+            }
+          }}
+          className="text-center mb-16 pt-6"
+        >
+          <motion.h1
+            className="text-4xl md:text-5xl jolly text-white drop-shadow-lg tracking-wide mb-6 overflow-hidden whitespace-nowrap border-r-4 border-yellow-400 pr-2 animate-typing"
+          >
+            Nuestros servicios y productos
+          </motion.h1>
+
+
+          <motion.p
+            className="text-lg text-gray-300 max-w-3xl mx-auto leading-relaxed px-4"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.7 }}
+          >
+            En <span className="text-yellow-400 font-semibold">Pasión y Estilo</span>, cada detalle está pensado para resaltar tu mejor versión. Desde cortes clásicos hasta tendencias modernas, ofrecemos mucho más que estética: una experiencia personalizada con identidad propia.
+          </motion.p>
+
+          <motion.p
+            className="text-base text-gray-400 max-w-xl mx-auto mt-4 italic"
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.7 }}
+          >
+            🔹 Explora nuestras categorías y descubre lo que hace única a tu barbería de confianza. Tu estilo comienza aquí.
+          </motion.p>
+        </motion.div>
 
         {/* Manejo de errores */}
         {error && (
-          <div className="bg-red-900 border-l-4 border-red-500 p-4 mb-8 rounded-lg">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-red-900 border-l-4 border-red-500 p-4 mb-8 rounded-lg"
+          >
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -74,24 +136,49 @@ export default function ServiciosPage() {
                 <p className="text-sm text-red-200">{error}</p>
               </div>
             </div>
-          </div>
+          </motion.div>
         )}
 
         {/* Contenido principal */}
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          >
             {[...Array(8)].map((_, i) => (
-              <SkeletonCard key={i} />
+              <motion.div key={i} variants={item}>
+                <SkeletonCard />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          >
             {secciones.length > 0 ? (
-              secciones.map(seccion => (
-                <ServiceCard key={seccion.id} seccion={seccion} />
+              secciones.map((seccion, index) => (
+                <motion.div
+                  key={seccion.id}
+                  variants={item}
+                  custom={index}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <ServiceCard seccion={seccion} />
+                </motion.div>
               ))
             ) : (
-              <div className="col-span-full text-center py-12">
+              <motion.div
+                className="col-span-full text-center py-12"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+              >
                 <svg
                   className="mx-auto h-12 w-12 text-gray-500"
                   fill="none"
@@ -106,11 +193,11 @@ export default function ServiciosPage() {
                     d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <h3 className="mt-2 text-lg font-medium text-white">No hay secciones disponibles</h3>
+                <h3 className="mt-2 text-lg font-medium text-white germania">No hay secciones disponibles</h3>
                 <p className="mt-1 text-gray-400">No se encontraron servicios o productos en este momento.</p>
-              </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         )}
       </div>
     </main>
@@ -155,10 +242,14 @@ function ServiceCard({ seccion }: { seccion: Seccion }) {
 
       {/* Contenido de la tarjeta */}
       <div className="flex-1 p-5 flex flex-col">
-        <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2">
+        <motion.h3
+          className="text-lg font-semibold text-white mb-2 line-clamp-2 germania"
+          whileHover={{ color: "#f8d226ff" }}
+          transition={{ duration: 0.3 }}
+        >
           {seccion.nombre}
-        </h3>
-        
+        </motion.h3>
+
         <div className="mt-auto">
           <div className="flex items-center text-sm text-gray-300 mb-3">
             <svg
@@ -187,16 +278,22 @@ function ServiceCard({ seccion }: { seccion: Seccion }) {
           </div>
 
           <div className="flex justify-between items-center">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-900 text-blue-200">
+            <motion.span
+              className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-900 text-blue-200"
+              whileHover={{ scale: 1.05 }}
+            >
               {seccion.cantidad_items > 0
-                ? `${seccion.cantidad_items} ${seccion.tipo === 'servicio' ? 'servicios' : 'items'}`
+                ? `${seccion.cantidad_items} ${seccion.tipo === 'servicio' ? 'servicios' : 'elementos'}`
                 : 'Próximamente'}
-            </span>
+            </motion.span>
 
             {seccion.tiene_catalogo && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900 text-green-200">
+              <motion.span
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900 text-green-200"
+                whileHover={{ scale: 1.05 }}
+              >
                 Catálogo
-              </span>
+              </motion.span>
             )}
           </div>
         </div>

@@ -7,6 +7,20 @@ import { useState, useEffect, useRef } from 'react'
 import { Menu, X, User, LogOut, UserCircle, Settings, Calendar } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
+import { Anton, Oswald } from 'next/font/google'
+
+// Configuración de fuentes
+const barberFont = Oswald({ 
+  subsets: ['latin'],
+  weight: '700',
+  variable: '--font-barber'
+})
+
+const vintageFont = Anton({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-vintage'
+})
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -51,11 +65,11 @@ export default function Navbar() {
   const toggleMenu = () => setIsOpen(!isOpen)
 
   const navLinks = [
-    { name: 'Inicio', href: '/' },
-    { name: 'Servicios', href: 'servicios' },
-    { name: 'Citas', href: 'citas' },
-    { name: 'Blog', href: '#blog' },
-    { name: 'Contacto', href: '#contacto' },
+    { name: 'INICIO', href: '/' },
+    { name: 'SERVICIOS', href: 'servicios' },
+    { name: 'CITAS', href: 'citas' },
+    { name: 'BLOG', href: '#blog' },
+    { name: 'CONTACTO', href: 'contacto' },
   ]
 
   const mostrarMenuCliente = user?.rol === 'CLIENTE' || user?.rol === '1'
@@ -63,21 +77,25 @@ export default function Navbar() {
   return (
     <nav
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? 'bg-black/80 backdrop-blur' : 'bg-transparent'
-      } shadow-sm`}
+        scrolled ? 'bg-black/90 backdrop-blur' : 'bg-transparent'
+      } shadow-sm ${barberFont.variable} ${vintageFont.variable}`}
     >
       <div className="container mx-auto flex items-center justify-between px-4 py-3">
         <Link href="/" className="flex items-center space-x-2">
-          <Image src="/logo.png" alt="Logo" width={100} height={100} />
-          <span className="text-white font-bold text-xl">Pasión y Estilo</span>
+          <Image src="/logo.png" alt="Logo" width={40} height={40} className="h-10 w-10" />
+          <span className={`text-white text-xl tracking-wider font-barber`}>
+            PASION Y ESTILO
+          </span>
         </Link>
 
-        <div className="hidden md:flex space-x-6">
+        <div className="hidden md:flex space-x-8">
           {navLinks.map(link => (
             <Link
               key={link.name}
               href={link.href}
-              className="text-white hover:text-indigo-400 transition-colors duration-200"
+              className={`text-white hover:text-red-500 transition-colors duration-200 uppercase tracking-wider font-vintage ${
+                link.name === 'CITAS' ? 'text-red-500' : ''
+              }`}
             >
               {link.name}
             </Link>
@@ -89,10 +107,10 @@ export default function Navbar() {
             <div className="relative" ref={menuRef}>
               <button
                 onClick={() => setSubmenuOpen(!submenuOpen)}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-full text-white transition-all duration-300"
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-700 to-blue-700 hover:from-red-600 hover:to-blue-600 rounded-full text-white transition-all duration-300 font-vintage uppercase tracking-wider"
               >
-                <UserCircle size={20} />
-                <span>{user.nombre}</span>
+                <UserCircle size={18} />
+                <span>{user.nombre.split(' ')[0]}</span>
               </button>
 
               <AnimatePresence>
@@ -102,34 +120,34 @@ export default function Navbar() {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: -10 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50"
+                    className="absolute right-0 mt-2 w-48 bg-gray-900 border border-gray-700 rounded-lg shadow-lg py-2 z-50"
                   >
                     <Link
                       href="/perfil"
                       onClick={() => setSubmenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-white hover:bg-gray-800"
                     >
-                      <User size={16} /> Mi Perfil
+                      <User size={16} /> MI PERFIL
                     </Link>
                     <Link
                       href="/citas"
                       onClick={() => setSubmenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-white hover:bg-gray-800"
                     >
-                      <Calendar size={16} /> Citas
+                      <Calendar size={16} /> CITAS
                     </Link>
                     <Link
                       href="/configuracion"
                       onClick={() => setSubmenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-white hover:bg-gray-800"
                     >
-                      <Settings size={16} /> Configuración
+                      <Settings size={16} /> CONFIGURACIÓN
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 w-full hover:bg-gray-100"
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-red-500 w-full hover:bg-gray-800"
                     >
-                      <LogOut size={16} /> Cerrar sesión
+                      <LogOut size={16} /> CERRAR SESIÓN
                     </button>
                   </motion.div>
                 )}
@@ -138,10 +156,10 @@ export default function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-full text-white transition-all duration-300"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-700 to-blue-700 hover:from-red-600 hover:to-blue-600 rounded-full text-white transition-all duration-300 font-vintage uppercase tracking-wider"
             >
-              <User size={18} />
-              <span>Ingresar</span>
+              <User size={16} />
+              <span>INGRESAR</span>
             </Link>
           )}
         </div>
@@ -157,32 +175,34 @@ export default function Navbar() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="md:hidden bg-black/90 backdrop-blur px-4 pt-4 pb-6"
+            className="md:hidden bg-black/95 backdrop-blur px-4 pt-4 pb-6"
           >
             {navLinks.map(link => (
               <Link
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsOpen(false)}
-                className="block text-white py-2"
+                className={`block text-white py-3 uppercase tracking-wider font-vintage ${
+                  link.name === 'CITAS' ? 'text-red-500' : ''
+                }`}
               >
                 {link.name}
               </Link>
             ))}
 
             {mostrarMenuCliente && user ? (
-              <div className="mt-4 text-white font-semibold text-center">
-                ¡Hola, {user.nombre}!
+              <div className={`mt-4 text-white font-semibold text-center font-barber`}>
+                ¡HOLA, {user.nombre.split(' ')[0].toUpperCase()}!
               </div>
             ) : (
               <div className="mt-4">
                 <Link
                   href="/login"
-                  className="flex items-center justify-center gap-2 w-full py-3 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors duration-300"
+                  className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-red-700 to-blue-700 hover:from-red-600 hover:to-blue-600 rounded-lg transition-colors duration-300 font-vintage uppercase tracking-wider"
                   onClick={() => setIsOpen(false)}
                 >
-                  <User size={18} />
-                  <span>Ingresar</span>
+                  <User size={16} />
+                  <span>INGRESAR</span>
                 </Link>
               </div>
             )}

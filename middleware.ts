@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
     const { rol } = decoded
 
     // Protege todas las rutas bajo /dashboard
-    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    if (request.nextUrl.pathname.startsWith('/login')) {
       // Clientes no pueden acceder a dashboard
       if (rol === 'CLIENTE') {
         return NextResponse.redirect(new URL('/', request.url))
@@ -23,7 +23,7 @@ export function middleware(request: NextRequest) {
     }
 
     // Protege todas las rutas bajo /admin
-    if (request.nextUrl.pathname.startsWith('/admin')) {
+    if (request.nextUrl.pathname.startsWith('/dashboard')) {
       if (rol !== 'ADMIN') {
         return NextResponse.redirect(new URL('/', request.url))
       }
