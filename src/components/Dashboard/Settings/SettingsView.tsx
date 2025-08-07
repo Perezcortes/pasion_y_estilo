@@ -1,6 +1,6 @@
 'use client'
 
-import { useUser } from '../app/hooks/useUser'
+import { useUser } from '../../../app/hooks/useUser'
 
 export default function SettingsView() {
   const { user } = useUser()

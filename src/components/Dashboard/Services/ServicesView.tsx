@@ -1,6 +1,6 @@
 'use client'
 
-import { useUser } from '../app/hooks/useUser'
+import { useUser } from '../../../app/hooks/useUser'
 import ServicesManagement from './ServicesManagement'
 
 export default function ServicesView() {

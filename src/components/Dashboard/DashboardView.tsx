@@ -1,8 +1,8 @@
 'use client'
 
-import { useUser } from '../app/hooks/useUser'
+import { useUser } from '../../app/hooks/useUser'
 import { motion } from 'framer-motion'
-import { fadeIn } from '../lib/motion'
+import { fadeIn } from '../../lib/motion'
 
 export default function DashboardView() {
   const { user } = useUser()

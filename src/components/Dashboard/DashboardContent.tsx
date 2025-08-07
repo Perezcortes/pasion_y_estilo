@@ -1,11 +1,11 @@
 'use client'
 
-import { useUser } from '../app/hooks/useUser'
+import { useUser } from '../../app/hooks/useUser'
 import DashboardView from './DashboardView'
-import AppointmentsView from './AppointmentsView'
+import AppointmentsView from './Appointment/AppointmentsView'
 import ClientsView from './ClientsView'
-import ServicesView from './ServicesView'
-import SettingsView from './SettingsView'
+import ServicesView from './Services/ServicesView'
+import SettingsView from './Settings/SettingsView'
 
 export default function DashboardContent({ activeTab }: { activeTab: string }) {
   const { user } = useUser()

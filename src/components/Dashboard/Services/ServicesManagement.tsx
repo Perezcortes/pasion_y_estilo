@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
-import Modal from './CustomModal'
+import Modal from './components/CustomModal'
 import Image from 'next/image'
-import ImageUploader from './ImageUploader'
+import ImageUploader from '../ImageUploader'
 
 interface Seccion {
     id: number
@@ -513,21 +513,41 @@ export default function ServicesManagement() {
             <Modal
                 isOpen={modalConfirmacionAbierto}
                 onClose={() => setModalConfirmacionAbierto(false)}
-                title={confirmacionData.titulo}
+                title=""
                 size="md"
             >
-                <div className="space-y-4">
-                    <p>{confirmacionData.mensaje}</p>
-                    <div className="flex justify-end space-x-3 pt-4">
+                <div className="space-y-5 text-white">
+                    {/* Icono + Título + Mensaje */}
+                    <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-12 h-12 rounded-full bg-red-900/20 border border-red-500/30 flex items-center justify-center">
+                            <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 
+            1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 
+            0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"
+                                />
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-semibold text-gray-900">{confirmacionData.titulo}</h2>
+                            <p className="mt-1 text-sm text-gray-900">{confirmacionData.mensaje}</p>
+                        </div>
+                    </div>
+
+                    {/* Botones */}
+                    <div className="flex justify-end gap-3 pt-2">
                         <button
                             onClick={confirmacionData.onCancel}
-                            className="px-4 py-2 border rounded hover:bg-gray-50 transition"
+                            className="px-4 py-2 rounded-md border border-gray-600 text-gray-200 bg-gray-800 hover:bg-gray-700 transition"
                         >
                             Cancelar
                         </button>
                         <button
                             onClick={confirmacionData.onConfirm}
-                            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                            className="px-4 py-2 rounded-md text-white bg-red-600 hover:bg-red-700 shadow-sm transition"
                         >
                             Confirmar
                         </button>

@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useUser } from '../app/hooks/useUser'
+import { useUser } from '../../../app/hooks/useUser'
 import { motion } from 'framer-motion'
-import { fadeIn } from '../lib/motion'
+import { fadeIn } from '../../../lib/motion'
 import { toast } from 'react-hot-toast'
 import { Search, Filter, ChevronDown, Loader2, X } from 'lucide-react'
 

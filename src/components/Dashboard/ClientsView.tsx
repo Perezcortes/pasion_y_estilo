@@ -1,7 +1,7 @@
 'use client'
 
-import { useUser } from '../app/hooks/useUser'
-import ClientsManagement from './ClientsManagement' 
+import { useUser } from '../../app/hooks/useUser'
+import ClientsManagement from './ClientsManagement/ClientsManagement' 
 
 export default function ClientsView() {
   const { user } = useUser()
