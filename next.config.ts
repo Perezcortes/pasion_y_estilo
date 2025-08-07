@@ -27,7 +27,13 @@ const nextConfig: NextConfig = {
         protocol: 'http',
         hostname: 'localhost',
         port: '3000',
-      }
+      },
+
+      {
+        protocol: 'https',
+        hostname: 'pakar.com',
+      },
+      
     ],
     // Opcional: ajustes de calidad y formatos
     formats: ['image/avif', 'image/webp'],

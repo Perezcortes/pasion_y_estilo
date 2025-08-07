@@ -7,10 +7,11 @@ import 'swiper/css'
 import 'swiper/css/effect-fade'
 import 'swiper/css/pagination'
 import 'swiper/css/navigation'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Oswald, Bebas_Neue, Anton } from 'next/font/google'
 
-const barberFont = Oswald({ 
+const barberFont = Oswald({
   subsets: ['latin'],
   weight: '700',
   variable: '--font-barber'
@@ -28,22 +29,25 @@ export default function Home() {
       id: 1,
       title: 'Pasión y Estilo',
       subtitle: 'Tu barbería de confianza',
-      img: '/slider/slide1.jpg',
-      cta: 'Reserva ahora'
+      img: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+      cta: 'Reserva ahora',
+      href: '/citas',
     },
     {
       id: 2,
       title: 'Cortes Clásicos',
       subtitle: 'Técnicas tradicionales con toque moderno',
-      img: '/slider/slide2.jpg',
-      cta: 'Nuestros servicios'
+      img: 'https://images.unsplash.com/photo-1621605815971-fbc98d665033?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+      cta: 'Nuestros servicios',
+      href: '/servicios',
     },
     {
       id: 3,
       title: 'Club de Fidelidad',
       subtitle: 'Beneficios exclusivos para clientes frecuentes',
-      img: '/slider/slide3.jpg',
-      cta: 'Únete al club'
+      img: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80',
+      cta: 'Únete al club',
+      href: '/registro',
     },
   ]
 
@@ -84,7 +88,7 @@ export default function Home() {
         speed={1000}
         className="h-screen"
       >
-        {slides.map(({ id, title, subtitle, img, cta }) => (
+        {slides.map(({ id, title, subtitle, img, cta, href }) => (
           <SwiperSlide key={id}>
             <Parallax
               bgImage={img}
@@ -113,13 +117,16 @@ export default function Home() {
                   <p className="text-xl md:text-2xl lg:text-3xl font-light mb-8 text-gray-200 font-vintage">
                     {subtitle}
                   </p>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="px-8 py-3 bg-gradient-to-r from-red-700 to-blue-700 hover:from-red-600 hover:to-blue-600 text-white font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-red-500/20"
-                  >
-                    {cta}
-                  </motion.button>
+
+                  <Link href={href}>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="px-8 py-3 bg-gradient-to-r from-red-700 to-blue-700 hover:from-red-600 hover:to-blue-600 text-white font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-red-500/20"
+                    >
+                      {cta}
+                    </motion.button>
+                  </Link>
                 </motion.div>
               </div>
             </Parallax>
@@ -185,16 +192,16 @@ export default function Home() {
               Nuestros Trabajos
             </span>
           </h2>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[1,2,3,4,5,6,7,8].map((item) => (
-              <motion.div 
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
+              <motion.div
                 key={item}
                 whileHover={{ scale: 1.03 }}
                 className="overflow-hidden rounded-lg shadow-lg"
               >
-                <img 
-                  src={`/gallery/work-${item}.jpg`} 
+                <img
+                  src={`/gallery/work-${item}.jpg`}
                   alt={`Trabajo de barbería ${item}`}
                   className="w-full h-48 md:h-64 object-cover hover:scale-105 transition-transform duration-500"
                 />

@@ -5,6 +5,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { Skeleton } from '../../../../components/ui/skeleton'
+import { motion, Variants } from 'framer-motion'
+import styles from './section-detail.module.css'
 
 interface Seccion {
   id: number
@@ -24,76 +26,118 @@ interface ItemSeccion {
   es_destacado: boolean
 }
 
-function ItemCard({ item }: { item: ItemSeccion }) {
+function ItemCard({ item, index }: { item: ItemSeccion; index: number }) {
   return (
-    <div className="border border-gray-700 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-gray-800 hover:bg-gray-750 h-full flex flex-col">
-      <div className="relative aspect-square bg-gray-700 flex-shrink-0">
-        {item.imagen_url ? (
-          <Image
-            src={item.imagen_url}
-            alt={item.nombre}
-            fill
-            className="object-contain p-4"
-            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            quality={85}
-          />
-        ) : (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.1 }}
+      whileHover={{ scale: 1.02, y: -5 }}
+      className={styles.itemCard}
+    >
+      {/* Background with gradient */}
+      <div className={styles.cardBackground}></div>
+      <div className={styles.cardOverlay}></div>
+      
+      {/* Destacado Badge */}
+      {item.es_destacado && (
+        <div className={styles.featuredBadge}>
+          <div className={`${styles.featuredBadgeContent} ${styles.inter}`}>
+            <svg style={{width: '0.75rem', height: '0.75rem', marginRight: '0.25rem'}} fill="currentColor" viewBox="0 0 20 20">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
             </svg>
+            Destacado
           </div>
-        )}
-      </div>
-      <div className="p-4 flex-grow flex flex-col">
-        <h3 className="text-lg font-semibold mb-2 text-white">{item.nombre}</h3>
-        {item.descripcion && (
-          <p className="text-gray-300 mb-3 flex-grow">{item.descripcion}</p>
-        )}
-        
-        <div className="flex justify-between items-center mt-auto pt-4">
-          <span className="text-lg font-bold text-white">
-            {item.precio !== null ? `$${item.precio.toFixed(2)}` : "Consultar precio"}
-          </span>
-          
-          {item.archivo_pdf && (
-            <a 
-              href={item.archivo_pdf} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="inline-flex items-center text-sm text-blue-400 hover:text-blue-300 transition-colors"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-              </svg>
-              Ver ficha
-            </a>
+        </div>
+      )}
+
+      <div className={styles.cardContent}>
+        {/* Image Container */}
+        <div className={styles.imageSection}>
+          {item.imagen_url ? (
+            <>
+              <Image
+                src={item.imagen_url}
+                alt={item.nombre}
+                fill
+                className={styles.itemImage}
+                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                quality={90}
+              />
+              <div className={styles.imageOverlay}></div>
+            </>
+          ) : (
+            <div className={styles.imagePlaceholder}>
+              <div className={styles.placeholderIcon}>
+                <svg style={{width: '2rem', height: '2rem', color: '#9ca3af'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+              </div>
+            </div>
           )}
         </div>
-        
-        {item.es_destacado && (
-          <div className="mt-3">
-            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-900 text-yellow-200">
-              Destacado
-            </span>
+
+        {/* Content */}
+        <div className={styles.contentSection}>
+          <h3 className={`${styles.itemTitle} ${styles.inter}`}>
+            {item.nombre}
+          </h3>
+          
+          {item.descripcion && (
+            <p className={`${styles.itemDescription} ${styles.inter}`}>
+              {item.descripcion}
+            </p>
+          )}
+          
+          <div className={styles.priceSection}>
+            {/* Price */}
+            <div className={styles.priceRow}>
+              <div className={styles.price}>
+                <span className={`${styles.priceAmount} ${styles.inter}`}>
+                  {item.precio !== null ? `$${item.precio.toFixed(2)}` : "Consultar"}
+                </span>
+                {item.precio !== null && (
+                  <span className={`${styles.priceCurrency} ${styles.inter}`}>MXN</span>
+                )}
+              </div>
+              
+              {item.archivo_pdf && (
+                <motion.a 
+                  href={item.archivo_pdf} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`${styles.pdfButton} ${styles.inter}`}
+                >
+                  <svg style={{width: '1rem', height: '1rem', marginRight: '0.5rem'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                  </svg>
+                  Ficha
+                </motion.a>
+              )}
+            </div>
           </div>
-        )}
+        </div>
       </div>
-    </div>
+    </motion.div>
   )
 }
 
 function ItemSkeleton() {
   return (
-    <div className="border border-gray-700 rounded-lg overflow-hidden bg-gray-800 h-full">
-      <Skeleton className="aspect-square w-full bg-gray-700" />
-      <div className="p-4 space-y-3">
-        <Skeleton className="h-6 w-3/4 bg-gray-700" />
-        <Skeleton className="h-4 w-full bg-gray-700" />
-        <Skeleton className="h-4 w-2/3 bg-gray-700" />
-        <div className="flex justify-between pt-2">
-          <Skeleton className="h-6 w-16 bg-gray-700" />
-          <Skeleton className="h-6 w-16 bg-gray-700" />
+    <div className={styles.skeletonCard}>
+      <Skeleton className="aspect-square w-full bg-gray-700/50" />
+      <div className={styles.skeletonContent}>
+        <Skeleton className="h-6 w-3/4 bg-gray-700/50" />
+        <Skeleton className="h-4 w-full bg-gray-700/50" />
+        <Skeleton className="h-4 w-2/3 bg-gray-700/50" />
+        <div className={styles.skeletonFooter}>
+          <Skeleton className="h-8 w-20 bg-gray-700/50" />
+          <Skeleton className="h-8 w-16 bg-gray-700/50" />
+        </div>
+        <div className={styles.skeletonButton}>
+          <Skeleton className="h-10 w-full bg-gray-700/50" />
         </div>
       </div>
     </div>
@@ -141,18 +185,20 @@ export default function SeccionDetallePage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen pt-40 pb-12 bg-gray-900">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <Skeleton className="h-6 w-32 bg-gray-800 mb-6" />
-            <Skeleton className="h-10 w-3/4 bg-gray-800 mb-4" />
-            <Skeleton className="aspect-video w-full bg-gray-800 rounded-lg" />
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[...Array(8)].map((_, i) => (
-              <ItemSkeleton key={i} />
-            ))}
+      <main className={styles.main}>
+        <div className={styles.container}>
+          <div className={styles.maxWidth}>
+            <div className={styles.mb4}>
+              <Skeleton className="h-6 w-32 bg-gray-800/50 mb-6" />
+              <Skeleton className="h-12 w-3/4 bg-gray-800/50 mb-4" />
+              <Skeleton className="aspect-video w-full bg-gray-800/50 rounded-2xl" />
+            </div>
+            
+            <div className={styles.grid}>
+              {[...Array(8)].map((_, i) => (
+                <ItemSkeleton key={i} />
+              ))}
+            </div>
           </div>
         </div>
       </main>
@@ -161,68 +207,66 @@ export default function SeccionDetallePage() {
 
   if (error) {
     return (
-      <main className="min-h-screen pt-40 pb-12 bg-gray-900">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-red-900/50 border-l-4 border-red-500 p-4 mb-8 rounded-lg">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+      <main className={styles.main}>
+        <div className={styles.backgroundPattern}></div>
+        
+        <div className={styles.container}>
+          <div className={styles.errorState}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={styles.errorContainer}
+            >
+              <div className={styles.errorIconContainer}>
+                <svg style={{height: '2.5rem', width: '2.5rem', color: '#f87171'}} viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
               </div>
-              <div className="ml-3">
-                <h3 className="text-lg font-medium text-red-200">{error}</h3>
-              </div>
-            </div>
+              <h3 className={`${styles.errorTitle} ${styles.inter}`}>Error al cargar</h3>
+              <p className={`${styles.errorMessage} ${styles.inter}`}>{error}</p>
+              
+              <Link href="/servicios" className={`${styles.errorButton} ${styles.inter}`}>
+                <svg style={{width: '1.25rem', height: '1.25rem', marginRight: '0.5rem'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Volver a servicios
+              </Link>
+            </motion.div>
           </div>
-          
-          <Link 
-            href="/servicios" 
-            className="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            Volver a servicios
-          </Link>
         </div>
-
-        <style jsx global>{`
-          @import url('https://fonts.googleapis.com/css2?family=Jolly+Lodger&display=swap');
-
-          .jolly {
-            font-family: 'Jolly Lodger', cursive;
-            letter-spacing: 1px;
-          }
-        `}</style>
       </main>
     )
   }
 
   if (!seccion) {
     return (
-      <main className="min-h-screen pt-40 pb-12 bg-gray-900">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-2xl font-bold text-white mb-4 jolly">Sección no encontrada</h1>
-          <Link 
-            href="/servicios" 
-            className="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            Volver a servicios
-          </Link>
+      <main className={styles.main}>
+        <div className={styles.backgroundPattern}></div>
+        
+        <div className={styles.container}>
+          <div className={styles.errorState}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={styles.errorContainer}
+            >
+              <div className={styles.emptyIcon}>
+                <svg style={{width: '2.5rem', height: '2.5rem', color: '#9ca3af'}} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h1 className={`${styles.errorTitle} ${styles.jolly}`} style={{fontSize: '1.875rem'}}>Sección no encontrada</h1>
+              <p className={`${styles.errorMessage} ${styles.inter}`}>La sección que buscas no existe o ha sido eliminada.</p>
+              
+              <Link href="/servicios" className={`${styles.errorButton} ${styles.inter}`}>
+                <svg style={{width: '1.25rem', height: '1.25rem', marginRight: '0.5rem'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Volver a servicios
+              </Link>
+            </motion.div>
+          </div>
         </div>
-
-        <style jsx global>{`
-          @import url('https://fonts.googleapis.com/css2?family=Jolly+Lodger&display=swap');
-
-          .jolly {
-            font-family: 'Jolly Lodger', cursive;
-            letter-spacing: 1px;
-          }
-        `}</style>
       </main>
     )
   }
@@ -231,116 +275,160 @@ export default function SeccionDetallePage() {
   const itemsNormales = items.filter(item => !item.es_destacado)
 
   return (
-    <main className="min-h-screen pt-40 pb-12 bg-gray-900">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Encabezado */}
-        <div className="mb-12">
-          <Link 
-            href="/servicios" 
-            className="inline-flex items-center text-blue-400 hover:text-blue-300 transition-colors mb-6"
+    <main className={styles.main}>
+      <div className={styles.backgroundPattern}></div>
+      
+      <div className={styles.container}>
+        <div className={styles.maxWidth}>
+          {/* Header Section */}
+          <motion.div 
+            className={styles.headerSection}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            Volver a todos los servicios
-          </Link>
-          
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-6 jolly">{seccion.nombre}</h1>
-          
-          {seccion.imagen_url && (
-            <div className="relative aspect-video w-full max-w-4xl mx-auto rounded-lg overflow-hidden mb-8 bg-gray-800">
-              <Image
-                src={seccion.imagen_url}
-                alt={seccion.nombre}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-                priority
-              />
-            </div>
-          )}
-          
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-800 text-gray-300 border border-gray-700 capitalize">
-              <svg className="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                {seccion.tipo === 'servicio' ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                )}
+            {/* Breadcrumb */}
+            <Link href="/servicios" className={`${styles.breadcrumb} ${styles.inter}`}>
+              <svg style={{width: '1.25rem', height: '1.25rem', marginRight: '0.5rem'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
               </svg>
-              {seccion.tipo}
-            </span>
+              Volver a todos los servicios
+            </Link>
             
-            {seccion.tiene_catalogo && (
-              <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-500 transition-colors">
-                <svg className="-ml-1 mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v6a1 1 0 102 0V8z" clipRule="evenodd" />
-                </svg>
-                Ver catálogo completo
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Items destacados */}
-        {itemsDestacados.length > 0 && (
-          <section className="mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 pb-2 border-b border-gray-800 jolly">Destacados</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {itemsDestacados.map(item => (
-                <ItemCard key={item.id} item={item} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Items normales */}
-        <section>
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-8 pb-2 border-b border-gray-800 jolly">
-            {seccion.tipo === 'servicio' ? 'Nuestros Servicios' : 'Nuestros Productos'}
-          </h2>
-          
-          {itemsNormales.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {itemsNormales.map(item => (
-                <ItemCard key={item.id} item={item} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12 bg-gray-800/50 rounded-lg">
-              <svg
-                className="mx-auto h-12 w-12 text-gray-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            {/* Title */}
+            <div className={styles.titleContainer}>
+              <motion.h1 
+                className={`${styles.mainTitle} ${styles.jolly}`}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1}
-                  d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <h3 className="mt-4 text-lg font-medium text-gray-300">
-                No hay {seccion.tipo === 'servicio' ? 'servicios' : 'productos'} disponibles
-              </h3>
-              <p className="mt-1 text-gray-500">
-                Pronto agregaremos más {seccion.tipo === 'servicio' ? 'servicios' : 'productos'} a esta sección
-              </p>
+                <span className={styles.gradientText}>{seccion.nombre}</span>
+              </motion.h1>
+              
+              {/* Image Hero */}
+              {seccion.imagen_url && (
+                <motion.div 
+                  className={styles.heroImage}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4, duration: 0.6 }}
+                >
+                  <Image
+                    src={seccion.imagen_url}
+                    alt={seccion.nombre}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+                    priority
+                  />
+                  <div className={styles.heroImageOverlay}></div>
+                </motion.div>
+              )}
+              
+              {/* Meta Info */}
+              <motion.div 
+                className={styles.metaContainer}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.6, duration: 0.6 }}
+              >
+                <span className={`${styles.typeBadge} ${styles.inter}`}>
+                  <svg style={{flexShrink: 0, marginRight: '0.5rem', height: '1.25rem', width: '1.25rem', color: '#fbbf24'}} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    {seccion.tipo === 'servicio' ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    )}
+                  </svg>
+                  {seccion.tipo === 'servicio' ? '✂️ Servicio' : '🛍️ Producto'}
+                </span>
+                
+                {seccion.tiene_catalogo && (
+                  <motion.button 
+                    className={`${styles.catalogButton} ${styles.inter}`}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <svg style={{marginLeft: '-0.25rem', marginRight: '0.5rem', height: '1.25rem', width: '1.25rem'}} fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v6a1 1 0 102 0V8z" clipRule="evenodd" />
+                    </svg>
+                    Ver catálogo completo
+                  </motion.button>
+                )}
+              </motion.div>
             </div>
+          </motion.div>
+
+          {/* Featured Items */}
+          {itemsDestacados.length > 0 && (
+            <motion.section 
+              className={styles.section}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8, duration: 0.6 }}
+            >
+              <div className={styles.sectionTitle}>
+                <div className={`${styles.sectionDivider} ${styles.sectionDividerYellow}`}></div>
+                <h2 className={`${styles.sectionTitleText} ${styles.jolly}`}>
+                  ⭐ Destacados
+                </h2>
+                <div className={`${styles.sectionDivider} ${styles.sectionDividerYellow}`}></div>
+              </div>
+              
+              <div className={styles.grid}>
+                {itemsDestacados.map((item, index) => (
+                  <ItemCard key={item.id} item={item} index={index} />
+                ))}
+              </div>
+            </motion.section>
           )}
-        </section>
+
+          {/* Regular Items */}
+          <motion.section
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 0.6 }}
+          >
+            <div className={styles.sectionTitle}>
+              <div className={`${styles.sectionDivider} ${styles.sectionDividerBlue}`}></div>
+              <h2 className={`${styles.sectionTitleText} ${styles.jolly}`}>
+                {seccion.tipo === 'servicio' ? '✂️ Nuestros Servicios' : '🛍️ Nuestros Productos'}
+              </h2>
+              <div className={`${styles.sectionDivider} ${styles.sectionDividerBlue}`}></div>
+            </div>
+            
+            {itemsNormales.length > 0 ? (
+              <div className={styles.grid}>
+                {itemsNormales.map((item, index) => (
+                  <ItemCard key={item.id} item={item} index={index + itemsDestacados.length} />
+                ))}
+              </div>
+            ) : (
+              <motion.div 
+                className={styles.emptyState}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.2, duration: 0.6 }}
+              >
+                <div className={styles.emptyContainer}>
+                  <div className={styles.emptyIcon}>
+                    <svg style={{width: '2.5rem', height: '2.5rem', color: '#9ca3af'}} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className={`${styles.emptyTitle} ${styles.inter}`}>
+                    No hay {seccion.tipo === 'servicio' ? 'servicios' : 'productos'} disponibles
+                  </h3>
+                  <p className={`${styles.emptyDescription} ${styles.inter}`}>
+                    Pronto agregaremos más {seccion.tipo === 'servicio' ? 'servicios' : 'productos'} a esta sección
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </motion.section>
+        </div>
       </div>
-
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Jolly+Lodger&display=swap');
-
-        .jolly {
-          font-family: 'Jolly Lodger', cursive;
-          letter-spacing: 1px;
-        }
-      `}</style>
     </main>
   )
 }
