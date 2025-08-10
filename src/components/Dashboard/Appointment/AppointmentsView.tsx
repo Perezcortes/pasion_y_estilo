@@ -5,7 +5,7 @@ import { useUser } from '../../../app/hooks/useUser'
 import { motion } from 'framer-motion'
 import { fadeIn } from '../../../lib/motion'
 import { toast } from 'react-hot-toast'
-import { Search, Filter, ChevronDown, Loader2, X } from 'lucide-react'
+import { Search, Filter, ChevronDown, Loader2, X, Calendar, Clock } from 'lucide-react'
 
 interface Appointment {
   id: number
@@ -40,10 +40,12 @@ export default function AppointmentsView() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filters, setFilters] = useState({
     barbero: '',
-    estado: ''
+    estado: '',
+    fecha: '' // nuevo filtro para fecha
   })
   const [barberos, setBarberos] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
+  const [showTodayOnly, setShowTodayOnly] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -70,7 +72,7 @@ export default function AppointmentsView() {
       const data = await res.json()
       setAppointments(data)
       setFilteredAppointments(data)
-      setCurrentPage(1) // Resetear a primera página al cargar nuevos datos
+      setCurrentPage(1)
     } catch (error) {
       console.error('Error fetching appointments:', error)
       toast.error('Error al cargar las citas')
@@ -97,6 +99,21 @@ export default function AppointmentsView() {
       console.error('Error fetching barbers:', error)
       toast.error('Error al cargar la lista de barberos')
     }
+  }
+
+  // Función para verificar si una cita es del día actual
+  const isToday = (dateString: string) => {
+    const today = new Date()
+    const appointmentDate = new Date(dateString)
+    
+    return today.getFullYear() === appointmentDate.getFullYear() &&
+           today.getMonth() === appointmentDate.getMonth() &&
+           today.getDate() === appointmentDate.getDate()
+  }
+
+  // Función para obtener citas del día actual
+  const getTodayAppointments = () => {
+    return appointments.filter(appointment => isToday(appointment.fecha))
   }
 
   const formatDate = (dateString: string) => {
@@ -149,7 +166,13 @@ export default function AppointmentsView() {
 
   const clearSearch = () => {
     setSearchTerm('')
-    setFilters({ barbero: '', estado: '' })
+    setFilters({ barbero: '', estado: '', fecha: '' })
+    setShowTodayOnly(false)
+  }
+
+  const showOnlyTodayAppointments = () => {
+    setShowTodayOnly(true)
+    setFilters({ ...filters, fecha: 'hoy' })
   }
 
   // Aplicar filtros y búsqueda
@@ -173,9 +196,14 @@ export default function AppointmentsView() {
       result = result.filter(app => app.estado === filters.estado)
     }
 
+    // Filtro para mostrar solo citas de hoy
+    if (showTodayOnly || filters.fecha === 'hoy') {
+      result = result.filter(app => isToday(app.fecha))
+    }
+
     setFilteredAppointments(result)
-    setCurrentPage(1) // Resetear a primera página al cambiar filtros
-  }, [searchTerm, filters, appointments])
+    setCurrentPage(1)
+  }, [searchTerm, filters, appointments, showTodayOnly])
 
   // Paginación
   const totalPages = Math.ceil(filteredAppointments.length / ITEMS_PER_PAGE)
@@ -183,6 +211,9 @@ export default function AppointmentsView() {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE
   )
+
+  // Contar citas de hoy
+  const todayAppointmentsCount = getTodayAppointments().length
 
   if (loading) {
     return (
@@ -203,10 +234,31 @@ export default function AppointmentsView() {
       className="bg-gray-800/70 rounded-xl p-6 border border-gray-700"
     >
       <div className="flex flex-col gap-4 mb-6">
-        <h2 className="text-lg font-semibold text-white">
-          {user?.rol === 'ADMIN' ? 'Todas las Citas' : 
-           user?.rol === 'BARBERO' ? 'Mis Citas Programadas' : 'Mis Próximas Citas'}
-        </h2>
+        <div className="flex justify-between items-start">
+          <h2 className="text-lg font-semibold text-white">
+            {user?.rol === 'ADMIN' ? 'Todas las Citas' : 
+             user?.rol === 'BARBERO' ? 'Mis Citas Programadas' : 'Mis Próximas Citas'}
+          </h2>
+
+          {/* Contador de citas del día para admin/barbero */}
+          {(user?.rol === 'ADMIN' || user?.rol === 'BARBERO') && (
+            <div className="flex items-center gap-2">
+              <div className="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-full text-xs flex items-center gap-1">
+                <Calendar size={12} />
+                {todayAppointmentsCount} citas hoy
+              </div>
+              {todayAppointmentsCount > 0 && !showTodayOnly && (
+                <button
+                  onClick={showOnlyTodayAppointments}
+                  className="bg-green-900/30 text-green-400 px-3 py-1 rounded-full text-xs hover:bg-green-900/50 transition-colors flex items-center gap-1"
+                >
+                  <Clock size={12} />
+                  Ver solo hoy
+                </button>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Barra de búsqueda y filtros */}
         <div className="flex flex-col gap-3">
@@ -229,6 +281,25 @@ export default function AppointmentsView() {
                 </button>
               )}
             </div>
+
+            {/* Filtro de fecha */}
+            {(user?.rol === 'ADMIN' || user?.rol === 'BARBERO') && (
+              <div className="relative flex-1 sm:flex-none sm:w-48">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <select
+                  className="pl-9 pr-8 py-2 w-full bg-gray-700/50 border border-gray-600 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                  value={filters.fecha}
+                  onChange={(e) => {
+                    setFilters({ ...filters, fecha: e.target.value })
+                    setShowTodayOnly(e.target.value === 'hoy')
+                  }}
+                >
+                  <option value="">Todas las fechas</option>
+                  <option value="hoy">Solo hoy</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+              </div>
+            )}
 
             {(user?.rol === 'ADMIN' || user?.rol === 'BARBERO') && (
               <div className="relative flex-1 sm:flex-none sm:w-48">
@@ -269,7 +340,7 @@ export default function AppointmentsView() {
             )}
           </div>
 
-          {(searchTerm || filters.barbero || filters.estado) && (
+          {(searchTerm || filters.barbero || filters.estado || filters.fecha) && (
             <button
               onClick={clearSearch}
               className="self-end flex items-center gap-1 text-xs text-gray-400 hover:text-white transition-colors"
@@ -286,67 +357,85 @@ export default function AppointmentsView() {
       ) : (
         <>
           <div className="space-y-3 mb-4">
-            {paginatedAppointments.map(appointment => (
-              <div
-                key={appointment.id}
-                className="p-4 bg-gray-700/30 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-              >
-                <div className="flex-1">
-                  <h3 className="font-medium text-white">
-                    {user?.rol === 'CLIENTE' 
-                      ? 'Mi cita' 
-                      : appointment.nombre_cliente || 'Cliente no especificado'}
-                  </h3>
-                  <p className="text-sm text-gray-300">
-                    {appointment.servicio || 'Servicio no especificado'} • {formatDate(appointment.fecha)} a las {appointment.hora}
-                    {user?.rol === 'ADMIN' && appointment.nombre_barbero && ` • ${appointment.nombre_barbero}`}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Código: {appointment.codigo_reserva}
-                  </p>
-                </div>
+            {paginatedAppointments.map(appointment => {
+              const isTodayAppointment = isToday(appointment.fecha)
+              
+              return (
+                <div
+                  key={appointment.id}
+                  className={`p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                    isTodayAppointment 
+                      ? 'bg-blue-900/20 border border-blue-500/30 shadow-lg shadow-blue-500/10' 
+                      : 'bg-gray-700/30'
+                  }`}
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-medium text-white">
+                        {user?.rol === 'CLIENTE' 
+                          ? 'Mi cita' 
+                          : appointment.nombre_cliente || 'Cliente no especificado'}
+                      </h3>
+                      {isTodayAppointment && (
+                        <span className="bg-blue-500 text-white px-2 py-0.5 rounded text-xs font-medium flex items-center gap-1">
+                          <Clock size={10} />
+                          HOY
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-300">
+                      {appointment.servicio || 'Servicio no especificado'} • {formatDate(appointment.fecha)} a las {appointment.hora}
+                      {user?.rol === 'ADMIN' && appointment.nombre_barbero && ` • ${appointment.nombre_barbero}`}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      Código: {appointment.codigo_reserva}
+                    </p>
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  {(user?.rol === 'ADMIN' || user?.rol === 'BARBERO') ? (
-                    <select
-                      className={`px-2 py-1 text-xs rounded-full appearance-none ${appointment.estado === 'CONFIRMADA' ? 'bg-green-900/30 text-green-400' :
-                        appointment.estado === 'PENDIENTE' ? 'bg-yellow-900/30 text-yellow-400' :
+                  <div className="flex items-center gap-2">
+                    {(user?.rol === 'ADMIN' || user?.rol === 'BARBERO') ? (
+                      <select
+                        className={`px-2 py-1 text-xs rounded-full appearance-none ${
+                          appointment.estado === 'CONFIRMADA' ? 'bg-green-900/30 text-green-400' :
+                          appointment.estado === 'PENDIENTE' ? 'bg-yellow-900/30 text-yellow-400' :
                           appointment.estado === 'CANCELADA' ? 'bg-red-900/30 text-red-400' :
-                            appointment.estado === 'COMPLETADA' ? 'bg-blue-900/30 text-blue-400' :
-                              'bg-gray-900/30 text-gray-400'
-                        }`}
-                      value={appointment.estado}
-                      onChange={(e) => handleStatusChange(appointment.id, e.target.value as EstadoKeys)}
-                      disabled={updatingStatus === appointment.id}
-                    >
-                      {Object.entries(ESTADOS).map(([key, value]) => (
-                        <option
-                          key={key}
-                          value={key}
-                          className="bg-gray-800 text-white"
-                        >
-                          {updatingStatus === appointment.id && key === appointment.estado ?
-                            'Actualizando...' : value}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <span className={`px-2 py-1 text-xs rounded-full ${appointment.estado === 'CONFIRMADA' ? 'bg-green-900/30 text-green-400' :
-                      appointment.estado === 'PENDIENTE' ? 'bg-yellow-900/30 text-yellow-400' :
-                        appointment.estado === 'CANCELADA' ? 'bg-red-900/30 text-red-400' :
                           appointment.estado === 'COMPLETADA' ? 'bg-blue-900/30 text-blue-400' :
-                            'bg-gray-900/30 text-gray-400'
+                          'bg-gray-900/30 text-gray-400'
+                        }`}
+                        value={appointment.estado}
+                        onChange={(e) => handleStatusChange(appointment.id, e.target.value as EstadoKeys)}
+                        disabled={updatingStatus === appointment.id}
+                      >
+                        {Object.entries(ESTADOS).map(([key, value]) => (
+                          <option
+                            key={key}
+                            value={key}
+                            className="bg-gray-800 text-white"
+                          >
+                            {updatingStatus === appointment.id && key === appointment.estado ?
+                              'Actualizando...' : value}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        appointment.estado === 'CONFIRMADA' ? 'bg-green-900/30 text-green-400' :
+                        appointment.estado === 'PENDIENTE' ? 'bg-yellow-900/30 text-yellow-400' :
+                        appointment.estado === 'CANCELADA' ? 'bg-red-900/30 text-red-400' :
+                        appointment.estado === 'COMPLETADA' ? 'bg-blue-900/30 text-blue-400' :
+                        'bg-gray-900/30 text-gray-400'
                       }`}>
-                      {formatStatus(appointment.estado)}
-                    </span>
-                  )}
+                        {formatStatus(appointment.estado)}
+                      </span>
+                    )}
 
-                  {updatingStatus === appointment.id && (
-                    <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
-                  )}
+                    {updatingStatus === appointment.id && (
+                      <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           {/* Paginación */}

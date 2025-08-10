@@ -99,8 +99,17 @@ export default function ServicesManagement() {
             if (!res.ok) throw new Error('Error al cargar items')
 
             const data = await res.json()
+            console.log('🔥 Datos de items cargados:', data); // Debug
+
             if (data.success) {
-                setItems(data.data.items || [])
+                // Asegurarse de que cada item tenga seccion_id
+                const itemsConSeccionId = data.data.items.map((item: any) => ({
+                    ...item,
+                    seccion_id: item.seccion_id || seccionId // Agregar seccion_id si falta
+                }));
+
+                console.log('🔥 Items procesados:', itemsConSeccionId); // Debug
+                setItems(itemsConSeccionId)
                 setSeccionSeleccionada(seccionId)
             } else {
                 throw new Error(data.error || 'Error al cargar items')
@@ -137,7 +146,15 @@ export default function ServicesManagement() {
             if (type === 'checkbox') {
                 newValue = (e.target as HTMLInputElement).checked;
             } else if (name === 'precio') {
-                newValue = value === '' ? null : parseFloat(value);
+                // Manejar mejor los valores de precio
+                if (value === '' || value === null) {
+                    newValue = null;
+                } else {
+                    const numValue = parseFloat(value);
+                    newValue = isNaN(numValue) ? null : numValue;
+                }
+            } else if (name === 'seccion_id') {
+                newValue = value === '' ? 0 : parseInt(value);
             } else {
                 newValue = value;
             }
@@ -201,20 +218,49 @@ export default function ServicesManagement() {
     }
 
     const guardarItem = async (e: React.FormEvent) => {
+        console.log('🔥 guardarItem ejecutándose...'); // Debug
         e.preventDefault();
+        e.stopPropagation();
+
+        console.log('🔥 Estado actual:', {
+            itemEditando,
+            formItemData,
+            seccionSeleccionada
+        }); // Debug
 
         // Validación mejorada
-        if (!formItemData.nombre.trim()) {
+        if (!formItemData.nombre || !formItemData.nombre.trim()) {
+            console.log('❌ Error: Nombre vacío');
             toast.error('Por favor ingrese un nombre válido para el item');
             return;
         }
 
-        // Verificar sección válida
-        const seccionId = itemEditando ? itemEditando.seccion_id : formItemData.seccion_id;
-        if (!seccionId || isNaN(seccionId)) {
+        // Verificar sección válida - MEJORADA con múltiples fuentes
+        let seccionId;
+
+        if (itemEditando) {
+            // Para edición, priorizar: item original -> form -> selección actual
+            seccionId = itemEditando.seccion_id || formItemData.seccion_id || seccionSeleccionada;
+        } else {
+            // Para creación, priorizar: form -> selección actual
+            seccionId = formItemData.seccion_id || seccionSeleccionada;
+        }
+
+        console.log('🔥 Verificando sección:', {
+            itemEditando: !!itemEditando,
+            seccionIdFromItem: itemEditando?.seccion_id,
+            seccionIdFromForm: formItemData.seccion_id,
+            seccionSeleccionada,
+            seccionIdFinal: seccionId
+        });
+
+        if (!seccionId || seccionId === 0 || isNaN(Number(seccionId))) {
+            console.log('❌ Error: Sección inválida', { seccionId });
             toast.error('Seleccione una sección válida');
             return;
         }
+
+        console.log('🔥 Datos a enviar:', { itemEditando, formItemData, seccionId }); // Debug
 
         const loadingToast = toast.loading(
             itemEditando ? 'Actualizando item...' : 'Creando item...'
@@ -230,13 +276,16 @@ export default function ServicesManagement() {
                 seccion_id: Number(seccionId),
                 nombre: formItemData.nombre.trim(),
                 descripcion: formItemData.descripcion || null,
-                precio: formItemData.precio !== null ? Number(formItemData.precio) : null,
+                precio: formItemData.precio !== null
+                    ? Number(formItemData.precio)
+                    : null,
                 imagen_url: formItemData.imagen_url || null,
                 archivo_pdf: formItemData.archivo_pdf || null,
                 es_destacado: Boolean(formItemData.es_destacado)
             };
 
-            console.log('Enviando datos:', payload); // Debug
+            console.log('🔥 Payload final:', payload); // Debug
+            console.log('🔥 URL:', url, 'Method:', method); // Debug
 
             const res = await fetch(url, {
                 method,
@@ -244,9 +293,13 @@ export default function ServicesManagement() {
                 body: JSON.stringify(payload)
             });
 
+            console.log('🔥 Response status:', res.status); // Debug
+
             const data = await res.json();
+            console.log('🔥 Response data:', data); // Debug
 
             if (!res.ok) {
+                console.error('❌ Error en respuesta:', data);
                 throw new Error(data.error || `Error ${res.status}: ${res.statusText}`);
             }
 
@@ -260,13 +313,19 @@ export default function ServicesManagement() {
             cerrarModalItem();
 
         } catch (error: any) {
-            console.error('Error al guardar item:', error);
+            console.error('❌ Error al guardar item:', error);
             toast.error(
                 error.message || '❌ Error al conectar con el servidor',
                 { id: loadingToast }
             );
         }
     };
+
+    const handleSubmitClick = (e: React.MouseEvent) => {
+        console.log('🔥 Botón clickeado!'); // Debug
+        // No hacer nada aquí, dejar que el form maneje el submit
+    };
+
 
     const editarSeccion = (seccion: Seccion) => {
         setSeccionEditando(seccion)
@@ -280,17 +339,28 @@ export default function ServicesManagement() {
     }
 
     const editarItem = (item: ItemSeccion) => {
-        console.log('Editando item:', item);
+        console.log('🔥 Editando item completo:', item);
+        console.log('🔥 Propiedades del item:', Object.keys(item));
+        console.log('🔥 seccion_id del item:', item.seccion_id);
+        console.log('🔥 seccionSeleccionada actual:', seccionSeleccionada);
+
         setItemEditando(item);
-        setFormItemData({
-            seccion_id: item.seccion_id,
+
+        // Usar seccionSeleccionada como fallback si seccion_id no está disponible
+        const seccionIdToUse = item.seccion_id || seccionSeleccionada;
+
+        const formData = {
+            seccion_id: typeof seccionIdToUse === 'number' && !isNaN(seccionIdToUse) ? seccionIdToUse : 0,
             nombre: item.nombre || '',
             descripcion: item.descripcion || '',
-            precio: item.precio !== null && !isNaN(item.precio) ? item.precio : null,
+            precio: item.precio !== null && !isNaN(Number(item.precio)) ? Number(item.precio) : null,
             imagen_url: item.imagen_url || '',
             archivo_pdf: item.archivo_pdf || '',
-            es_destacado: item.es_destacado || false
-        });
+            es_destacado: Boolean(item.es_destacado)
+        };
+
+        console.log('🔥 Form data establecido:', formData);
+        setFormItemData(formData);
         setModalItemAbierto(true);
     };
 
@@ -635,113 +705,118 @@ export default function ServicesManagement() {
                 title={itemEditando ? 'Editar Item' : 'Nuevo Item'}
                 size="lg"
             >
-                <form onSubmit={guardarItem} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Sección*</label>
-                        <select
-                            name="seccion_id"
-                            value={formItemData.seccion_id}
-                            onChange={handleItemChange}
-                            className="w-full border rounded px-3 py-2"
-                            required
-                            disabled={!!itemEditando}
-                        >
-                            <option value="">Seleccionar sección</option>
-                            {secciones.map(sec => (
-                                <option key={sec.id} value={sec.id}>{sec.nombre}</option>
-                            ))}
-                        </select>
-                    </div>
+                <div onClick={(e) => e.stopPropagation()}>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Sección*</label>
+                            <select
+                                name="seccion_id"
+                                value={formItemData.seccion_id || ''}
+                                onChange={handleItemChange}
+                                className="w-full border rounded px-3 py-2"
+                                required
+                                disabled={!!itemEditando}
+                            >
+                                <option value="">Seleccionar sección</option>
+                                {secciones.map(sec => (
+                                    <option key={sec.id} value={sec.id}>{sec.nombre}</option>
+                                ))}
+                            </select>
+                        </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Nombre*</label>
-                        <input
-                            type="text"
-                            name="nombre"
-                            value={formItemData.nombre}
-                            onChange={handleItemChange}
-                            className="w-full border rounded px-3 py-2"
-                            required
-                        />
-                    </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Nombre*</label>
+                            <input
+                                type="text"
+                                name="nombre"
+                                value={formItemData.nombre}
+                                onChange={handleItemChange}
+                                className="w-full border rounded px-3 py-2"
+                                required
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Descripción</label>
-                        <textarea
-                            name="descripcion"
-                            value={formItemData.descripcion}
-                            onChange={handleItemChange}
-                            className="w-full border rounded px-3 py-2"
-                            rows={3}
-                        />
-                    </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Descripción</label>
+                            <textarea
+                                name="descripcion"
+                                value={formItemData.descripcion}
+                                onChange={handleItemChange}
+                                className="w-full border rounded px-3 py-2"
+                                rows={3}
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Precio</label>
-                        <input
-                            type="number"
-                            name="precio"
-                            value={formItemData.precio ?? ''}
-                            onChange={handleItemChange}
-                            className="w-full border rounded px-3 py-2"
-                            step="0.01"
-                            min="0"
-                        />
-                    </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Precio</label>
+                            <input
+                                type="number"
+                                name="precio"
+                                value={formItemData.precio !== null ? formItemData.precio : ''}
+                                onChange={handleItemChange}
+                                className="w-full border rounded px-3 py-2"
+                                step="0.01"
+                                min="0"
+                                placeholder="Ingrese el precio (opcional)"
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">Imagen</label>
-                        <ImageUploader
-                            onImageUpload={handleImageUpload}
-                            onUrlChange={(url) => setFormItemData(prev => ({ ...prev, imagen_url: url }))}
-                            currentValue={formItemData.imagen_url}
-                        />
-                    </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">Imagen</label>
+                            <ImageUploader
+                                onImageUpload={handleImageUpload}
+                                onUrlChange={(url) => setFormItemData(prev => ({ ...prev, imagen_url: url }))}
+                                currentValue={formItemData.imagen_url}
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block text-sm font-medium mb-1">URL del catálogo PDF</label>
-                        <input
-                            type="text"
-                            name="archivo_pdf"
-                            value={formItemData.archivo_pdf}
-                            onChange={handleItemChange}
-                            className="w-full border rounded px-3 py-2"
-                            placeholder="https://ejemplo.com/catalogo.pdf"
-                        />
-                    </div>
+                        <div>
+                            <label className="block text-sm font-medium mb-1">URL del catálogo PDF</label>
+                            <input
+                                type="text"
+                                name="archivo_pdf"
+                                value={formItemData.archivo_pdf}
+                                onChange={handleItemChange}
+                                className="w-full border rounded px-3 py-2"
+                                placeholder="https://ejemplo.com/catalogo.pdf"
+                            />
+                        </div>
 
-                    <div className="flex items-center">
-                        <input
-                            type="checkbox"
-                            name="es_destacado"
-                            checked={formItemData.es_destacado}
-                            onChange={handleItemChange}
-                            className="mr-2"
-                            id="es_destacado"
-                        />
-                        <label htmlFor="es_destacado" className="text-sm font-medium">
-                            Destacar este item
-                        </label>
-                    </div>
+                        <div className="flex items-center">
+                            <input
+                                type="checkbox"
+                                name="es_destacado"
+                                checked={formItemData.es_destacado}
+                                onChange={handleItemChange}
+                                className="mr-2"
+                                id="es_destacado"
+                            />
+                            <label htmlFor="es_destacado" className="text-sm font-medium">
+                                Destacar este item
+                            </label>
+                        </div>
 
-                    <div className="flex justify-end space-x-2 pt-4">
-                        <button
-                            type="button"
-                            onClick={cerrarModalItem}
-                            className="px-4 py-2 border rounded hover:bg-gray-50 transition"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            className={`px-4 py-2 text-white rounded transition ${loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-                                }`}
-                            disabled={loading}
-                        >
-                            {loading ? 'Guardando...' : 'Guardar'}
-                        </button>
+                        <div className="flex justify-end space-x-2 pt-4">
+                            <button
+                                type="button"
+                                onClick={cerrarModalItem}
+                                className="px-4 py-2 border rounded hover:bg-gray-50 transition"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    console.log('🔥 Botón directo clickeado!');
+                                    guardarItem(e as any);
+                                }}
+                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition"
+                            >
+                                {itemEditando ? 'Actualizar' : 'Guardar'}
+                            </button>
+                        </div>
                     </div>
-                </form>
+                </div>
             </Modal>
 
             {seccionSeleccionada && (

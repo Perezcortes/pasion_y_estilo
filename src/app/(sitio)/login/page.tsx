@@ -15,12 +15,14 @@ type FormData = {
 
 type Rol = 'ADMIN' | 'BARBERO' | 'CLIENTE'
 
-interface MeResponse {
-  user: {
-    id: number
-    nombre: string
-    rol: Rol
-  } | null
+// Estructura actualizada según tu nuevo endpoint
+interface UserData {
+  id: number
+  nombre: string
+  correo: string
+  rol: Rol
+  estado: string
+  creado_en: string
 }
 
 export default function LoginPage() {
@@ -41,64 +43,81 @@ export default function LoginPage() {
     }))
   }
 
-const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
     try {
+      console.log('Intentando login con:', formData.correo)
+      
       // 1) Hacer login
       const res = await fetch('/api/usuarios/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
+        credentials: 'include', // Importante para cookies
       })
 
       const data = await res.json()
+      console.log('Respuesta del login:', data)
+      
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Error al iniciar sesión')
       }
 
       // 2) Obtener datos del usuario desde la cookie recién seteada
+      console.log('Obteniendo datos del usuario...')
       const meRes = await fetch('/api/auth/me', {
         method: 'GET',
         credentials: 'include',
       })
 
+      console.log('Status de /api/auth/me:', meRes.status)
+      
       if (!meRes.ok) {
         throw new Error('No se pudieron obtener los datos del usuario.')
       }
 
-      const me: MeResponse = await meRes.json()
-      if (!me.user) {
+      // Tu endpoint ahora devuelve directamente los datos del usuario
+      const userData: UserData = await meRes.json()
+      console.log('Datos del usuario obtenidos:', userData)
+      
+      if (!userData || !userData.id) {
         throw new Error('Usuario no encontrado')
       }
 
       // 3) Guardar en localStorage
-      localStorage.setItem('nombre', me.user.nombre)
-      localStorage.setItem('rol', me.user.rol)
+      localStorage.setItem('nombre', userData.nombre)
+      localStorage.setItem('rol', userData.rol)
+      localStorage.setItem('token', 'logged-in') // Flag para indicar que está logueado
 
       // 4) Actualizar el contexto para refrescar Navbar
-      setUser({ nombre: me.user.nombre, rol: me.user.rol })
+      setUser({ nombre: userData.nombre, rol: userData.rol })
 
-      toast.success(`Bienvenido, ${me.user.nombre}`, {
+      toast.success(`Bienvenido, ${userData.nombre}`, {
         duration: 2500,
+        icon: '🎉',
       })
 
       // 5) Redirigir según rol
-      switch (me.user.rol) {
+      switch (userData.rol) {
         case 'ADMIN':
         case 'BARBERO':
+          console.log('Redirigiendo a dashboard...')
           router.push('/dashboard')
           break
         case 'CLIENTE':
+          console.log('Redirigiendo a home...')
           router.push('/')
           break
         default:
           setError('Rol no válido')
       }
     } catch (err: any) {
+      console.error('Error en login:', err)
       setError(err?.message || 'Error inesperado')
+      toast.error(err?.message || 'Error al iniciar sesión')
     } finally {
       setLoading(false)
     }
@@ -206,7 +225,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300"
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gradient-to-r from-red-600 to-purple-600 hover:from-red-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? (
                   <span className="flex items-center">

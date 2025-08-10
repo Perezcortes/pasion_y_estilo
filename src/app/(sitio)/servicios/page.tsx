@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { Skeleton } from '../../../components/ui/skeleton'
 import { motion, Variants } from 'framer-motion'
+import { FiTarget, FiScissors, FiShoppingBag, FiStar } from 'react-icons/fi';
 import styles from './styles.module.css'
 
 interface Seccion {
@@ -70,9 +71,9 @@ export default function ServiciosPage() {
 
   const item: Variants = {
     hidden: { opacity: 0, y: 40, scale: 0.95 },
-    show: { 
-      opacity: 1, 
-      y: 0, 
+    show: {
+      opacity: 1,
+      y: 0,
       scale: 1,
       transition: {
         type: "spring",
@@ -97,7 +98,7 @@ export default function ServiciosPage() {
   return (
     <main className={styles.main}>
       <div className={styles.backgroundPattern}></div>
-      
+
       <div className={styles.container}>
         <div className={styles.maxWidth}>
           {/* Hero Section */}
@@ -108,46 +109,50 @@ export default function ServiciosPage() {
             className={styles.heroSection}
           >
             <motion.div className={`${styles.badge} ${styles.glass}`}>
-              <span className={`${styles.inter}`} style={{color: '#fbbf24', fontSize: '0.875rem', fontWeight: 500}}>✨ Experiencia Premium</span>
+              <span className={`${styles.inter}`} style={{ color: '#eeece6ff', fontSize: '0.875rem', fontWeight: 500, display: 'inline-flex', alignItems: 'center' }}>
+                <FiStar style={{ marginRight: '6px' }} />
+                Experiencia Premium
+              </span>
             </motion.div>
 
             <motion.h1 className={`${styles.heroTitle} ${styles.jolly}`}>
-              <span style={{display: 'block'}}>Nuestros</span>
-              <span className={styles.gradientText}>Servicios & Productos</span>
+              <span style={{ display: 'block' }}>Nuestros</span>
+              <span className={styles.gradientText}>Servicios y Productos</span>
             </motion.h1>
 
             <motion.p className={`${styles.heroDescription} ${styles.inter}`}>
-              En <span className={styles.heroAccent}>Pasión y Estilo</span>, cada detalle está pensado para resaltar tu mejor versión. 
+              En <span className={styles.heroAccent}>Pasión y Estilo</span>, cada detalle está pensado para resaltar tu mejor versión.
               Desde cortes clásicos hasta tendencias modernas, ofrecemos una experiencia personalizada con identidad propia.
             </motion.p>
 
             <motion.div className={`${styles.heroSubtext} ${styles.inter}`}>
               <div className={styles.heroDivider}></div>
-              <span style={{fontSize: '0.875rem', fontWeight: 500}}>Tu estilo comienza aquí</span>
+              <span style={{ fontSize: '0.875rem', fontWeight: 500 }}>Tu estilo comienza aquí</span>
               <div className={styles.heroDividerRight}></div>
             </motion.div>
           </motion.div>
 
           {/* Filtros */}
-          <motion.div 
+          <motion.div
             className={styles.filtersContainer}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
             {[
-              { key: 'todos', label: 'Todo', icon: '🎯' },
-              { key: 'servicio', label: 'Servicios', icon: '✂️' },
-              { key: 'producto', label: 'Productos', icon: '🛍️' }
+              { key: 'todos', label: 'Todo', icon: <FiTarget size={18} /> },
+              { key: 'servicio', label: 'Servicios', icon: <FiScissors size={18} /> },
+              { key: 'producto', label: 'Productos', icon: <FiShoppingBag size={18} /> }
             ].map(({ key, label, icon }) => (
               <button
                 key={key}
                 onClick={() => setFiltroTipo(key as any)}
-                className={`${styles.filterButton} ${styles.inter} ${
-                  filtroTipo === key ? styles.filterButtonActive : styles.filterButtonInactive
-                }`}
+                className={`${styles.filterButton} ${styles.inter} ${filtroTipo === key ? styles.filterButtonActive : styles.filterButtonInactive
+                  }`}
               >
-                <span style={{marginRight: '0.5rem'}}>{icon}</span>
+                <span style={{ marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center' }}>
+                  {icon}
+                </span>
                 {label}
               </button>
             ))}
@@ -161,8 +166,8 @@ export default function ServiciosPage() {
               className={styles.errorContainer}
             >
               <div className={styles.errorIcon}>
-                <div style={{flexShrink: 0}}>
-                  <svg style={{height: '1.5rem', width: '1.5rem', color: '#f87171'}} viewBox="0 0 20 20" fill="currentColor">
+                <div style={{ flexShrink: 0 }}>
+                  <svg style={{ height: '1.5rem', width: '1.5rem', color: '#f87171' }} viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                   </svg>
                 </div>
@@ -216,7 +221,7 @@ export default function ServiciosPage() {
                 >
                   <div className={styles.emptyContainer}>
                     <div className={styles.emptyIcon}>
-                      <svg style={{width: '2.5rem', height: '2.5rem', color: '#9ca3af'}} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg style={{ width: '2.5rem', height: '2.5rem', color: '#9ca3af' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
@@ -235,7 +240,7 @@ export default function ServiciosPage() {
 
 function ServiceCard({ seccion }: { seccion: Seccion }) {
   return (
-    <Link href={`/servicios/${seccion.id}`} className={`${styles.w100} ${styles.h100}`} style={{display: 'block'}}>
+    <Link href={`/servicios/${seccion.id}`} className={`${styles.w100} ${styles.h100}`} style={{ display: 'block' }}>
       <div className={styles.serviceCard}>
         {/* Image Container */}
         <div className={styles.imageContainer}>
@@ -260,18 +265,28 @@ function ServiceCard({ seccion }: { seccion: Seccion }) {
           ) : (
             <div className={styles.imagePlaceholder}>
               <div className={styles.placeholderIcon}>
-                <svg style={{width: '2rem', height: '2rem', color: '#9ca3af'}} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg style={{ width: '2rem', height: '2rem', color: '#9ca3af' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
             </div>
           )}
-          
+
           {/* Overlay Badge */}
           <div className={styles.overlayBadge}>
             <span className={`${styles.badgeGlass} ${styles.glass} ${styles.inter}`}>
               <span className={styles.pulsingDot}></span>
-              {seccion.tipo === 'servicio' ? '✂️ Servicio' : '🛍️ Producto'}
+              {seccion.tipo === 'servicio' ? (
+                <>
+                  <FiScissors size={14} style={{ marginRight: 4 }} />
+                  Servicio
+                </>
+              ) : (
+                <>
+                  <FiShoppingBag size={14} style={{ marginRight: 4 }} />
+                  Producto
+                </>
+              )}
             </span>
           </div>
         </div>
@@ -285,11 +300,11 @@ function ServiceCard({ seccion }: { seccion: Seccion }) {
           <div className={styles.cardMeta}>
             <div className={`${styles.metaRow} ${styles.inter}`}>
               <div className={styles.metaIcon}>
-                <svg style={{width: '0.75rem', height: '0.75rem', color: '#d1d5db'}} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg style={{ width: '0.75rem', height: '0.75rem', color: '#d1d5db' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <span style={{textTransform: 'capitalize', fontWeight: 500}}>{seccion.tipo}</span>
+              <span style={{ textTransform: 'capitalize', fontWeight: 500 }}>{seccion.tipo}</span>
             </div>
 
             <div className={styles.badgeContainer}>
@@ -308,7 +323,7 @@ function ServiceCard({ seccion }: { seccion: Seccion }) {
 
             <div className={`${styles.actionLink} ${styles.inter}`}>
               <span>Ver detalles</span>
-              <svg style={{width: '1rem', height: '1rem', marginLeft: '0.5rem'}} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg style={{ width: '1rem', height: '1rem', marginLeft: '0.5rem' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </div>

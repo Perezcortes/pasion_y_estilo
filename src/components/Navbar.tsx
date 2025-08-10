@@ -4,10 +4,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { useState, useEffect, useRef } from 'react'
-import { Menu, X, User, LogOut, UserCircle, Settings, Calendar, ChevronDown } from 'lucide-react'
+import { Menu, X, User, LogOut, UserCircle, Calendar, ChevronDown } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { Anton, Oswald } from 'next/font/google'
+import ProfileModal from './Profile/ProfileModal'
+import AppointmentsHistory from './Profile/AppointmentsHistory'
 
 // Configuración de fuentes
 const barberFont = Oswald({ 
@@ -22,10 +24,20 @@ const vintageFont = Anton({
   variable: '--font-vintage'
 })
 
+interface UserWithId {
+  id: number
+  nombre: string
+  correo: string
+  rol: string
+}
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [submenuOpen, setSubmenuOpen] = useState(false)
+  const [showProfileModal, setShowProfileModal] = useState(false)
+  const [showAppointmentsModal, setShowAppointmentsModal] = useState(false)
+  const [fullUserData, setFullUserData] = useState<UserWithId | null>(null)
   const { user, setUser } = useAuth()
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -47,10 +59,42 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Obtener datos completos del usuario cuando se monta el componente
+  useEffect(() => {
+    if (user && user.rol === 'CLIENTE') {
+      fetchUserData()
+    }
+  }, [user])
+
+  const fetchUserData = async () => {
+    try {
+      // Obtener el ID del usuario desde el token
+      const response = await fetch('/api/auth/me')
+      if (response.ok) {
+        const userData = await response.json()
+        
+        // Tu endpoint actual puede devolver { user: userData } o directamente userData
+        const userInfo = userData.user || userData
+        
+        if (userInfo) {
+          setFullUserData({
+            id: userInfo.id,
+            nombre: userInfo.nombre,
+            correo: userInfo.correo || '',
+            rol: userInfo.rol
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error al obtener datos del usuario:', error)
+    }
+  }
+
   const handleLogout = () => {
     const nombre = user?.nombre
     localStorage.removeItem('nombre')
     localStorage.removeItem('rol')
+    localStorage.removeItem('token')
     setUser(null)
     setSubmenuOpen(false)
 
@@ -60,6 +104,32 @@ export default function Navbar() {
     })
 
     window.location.href = '/'
+  }
+
+  const handleProfileClick = () => {
+    setSubmenuOpen(false)
+    if (fullUserData) {
+      setShowProfileModal(true)
+    } else {
+      toast.error('Error al cargar datos del perfil')
+    }
+  }
+
+  const handleAppointmentsClick = () => {
+    setSubmenuOpen(false)
+    if (fullUserData) {
+      setShowAppointmentsModal(true)
+    } else {
+      toast.error('Error al cargar historial de citas')
+    }
+  }
+
+  const handleUserUpdate = (updatedUser: UserWithId) => {
+    setFullUserData(updatedUser)
+    setUser({
+      nombre: updatedUser.nombre,
+      rol: updatedUser.rol
+    })
   }
 
   const toggleMenu = () => setIsOpen(!isOpen)
@@ -192,34 +262,40 @@ export default function Navbar() {
                       </div>
                       
                       {/* Menu items */}
-                      {[
-                        { icon: User, label: 'MI PERFIL', href: '/perfil' },
-                        { icon: Calendar, label: 'MIS CITAS', href: '/citas' },
-                        { icon: Settings, label: 'CONFIGURACIÓN', href: '/configuracion' }
-                      ].map((item, index) => (
-                        <motion.div
-                          key={item.label}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.05 }}
+                      <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0 }}
+                      >
+                        <button
+                          onClick={handleProfileClick}
+                          className="flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/5 transition-colors duration-200 group w-full text-left"
                         >
-                          <Link
-                            href={item.href}
-                            onClick={() => setSubmenuOpen(false)}
-                            className="flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/5 transition-colors duration-200 group"
-                          >
-                            <item.icon size={16} className="text-blue-400 group-hover:text-blue-300" />
-                            <span className="font-barber font-medium">{item.label}</span>
-                          </Link>
-                        </motion.div>
-                      ))}
+                          <User size={16} className="text-blue-400 group-hover:text-blue-300" />
+                          <span className="font-barber font-medium">MI PERFIL</span>
+                        </button>
+                      </motion.div>
+
+                      <motion.div
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.05 }}
+                      >
+                        <button
+                          onClick={handleAppointmentsClick}
+                          className="flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/5 transition-colors duration-200 group w-full text-left"
+                        >
+                          <Calendar size={16} className="text-blue-400 group-hover:text-blue-300" />
+                          <span className="font-barber font-medium">MIS CITAS</span>
+                        </button>
+                      </motion.div>
                       
                       {/* Logout button */}
                       <div className="border-t border-white/10 mt-2 pt-2">
                         <motion.button
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.15 }}
+                          transition={{ delay: 0.1 }}
                           onClick={handleLogout}
                           className="flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 w-full transition-colors duration-200 group"
                         >
@@ -301,7 +377,7 @@ export default function Navbar() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 }}
-                      className="text-center"
+                      className="space-y-2"
                     >
                       <div className="bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg p-4 mb-3">
                         <div className="flex items-center justify-center gap-2 mb-2">
@@ -310,8 +386,31 @@ export default function Navbar() {
                             ¡HOLA, {user.nombre.split(' ')[0].toUpperCase()}!
                           </span>
                         </div>
-                        <p className="text-gray-400 text-xs">Cliente activo</p>
+                        <p className="text-gray-400 text-xs text-center">Cliente activo</p>
                       </div>
+                      
+                      {/* Mobile menu buttons */}
+                      <button
+                        onClick={() => {
+                          setIsOpen(false)
+                          handleProfileClick()
+                        }}
+                        className="w-full flex items-center justify-center gap-2 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors duration-300 font-barber font-medium uppercase tracking-wider text-white"
+                      >
+                        <User size={16} />
+                        <span>MI PERFIL</span>
+                      </button>
+                      
+                      <button
+                        onClick={() => {
+                          setIsOpen(false)
+                          handleAppointmentsClick()
+                        }}
+                        className="w-full flex items-center justify-center gap-2 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors duration-300 font-barber font-medium uppercase tracking-wider text-white"
+                      >
+                        <Calendar size={16} />
+                        <span>MIS CITAS</span>
+                      </button>
                     </motion.div>
                   ) : (
                     <motion.div
@@ -335,6 +434,24 @@ export default function Navbar() {
           )}
         </AnimatePresence>
       </motion.nav>
+
+      {/* Modales */}
+      {fullUserData && (
+        <>
+          <ProfileModal
+            isOpen={showProfileModal}
+            onClose={() => setShowProfileModal(false)}
+            user={fullUserData}
+            onUserUpdate={handleUserUpdate}
+          />
+          
+          <AppointmentsHistory
+            isOpen={showAppointmentsModal}
+            onClose={() => setShowAppointmentsModal(false)}
+            userId={fullUserData.id}
+          />
+        </>
+      )}
     </>
   )
 }

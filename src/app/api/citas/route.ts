@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
 import { db } from '../../../lib/mysql'
 import { getUserFromToken } from '../../../lib/auth'
 
@@ -16,10 +16,29 @@ export async function GET(req: Request) {
   }
 
   try {
+    // Verificar si hay parámetro clienteId para filtrar (usado por los modales)
+    const url = new URL(req.url)
+    const clienteId = url.searchParams.get('clienteId')
+
     let query = ''
     let params: any[] = []
 
-    if (user.rol === 'CLIENTE') {
+    if (clienteId) {
+      // Filtro específico por cliente (usado por el modal de historial)
+      query = `
+        SELECT c.*, 
+          u.nombre as cliente_nombre,
+          barbero.nombre as barbero_nombre,
+          c.servicio
+        FROM citas c
+        JOIN usuarios u ON c.id_cliente = u.id
+        JOIN barberos b ON c.id_barbero = b.id
+        JOIN usuarios barbero ON b.id_usuario = barbero.id
+        WHERE c.id_cliente = ?
+        ORDER BY c.fecha DESC, c.hora DESC
+      `
+      params = [parseInt(clienteId)]
+    } else if (user.rol === 'CLIENTE') {
       query = `
         SELECT c.*, u.nombre as nombre_barbero, b.especialidad as servicio
         FROM citas c
