@@ -5,10 +5,22 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 import { motion } from 'framer-motion'
 import { Oswald, Anton } from 'next/font/google'
-import { Calendar as CalendarIcon, Clock, Scissors, User, AlertTriangle } from 'lucide-react'
+import {
+  Calendar as CalendarIcon,
+  Clock,
+  Scissors,
+  User,
+  AlertTriangle,
+  CreditCard,
+  Phone,
+  DollarSign,
+  Receipt,
+  MapPin
+} from 'lucide-react'
 import { useUser } from '../../hooks/useUser'
+import PaymentCard from '../../../components/PaymentCard'
 
-const barberFont = Oswald({ 
+const barberFont = Oswald({
   subsets: ['latin'],
   weight: '700',
   variable: '--font-barber'
@@ -27,6 +39,14 @@ interface Barbero {
   especialidad?: string
 }
 
+interface Servicio {
+  id: number
+  nombre: string
+  precio: number
+  descripcion?: string
+  duracion?: number
+}
+
 interface CitaAgendada {
   id: number
   fecha: string
@@ -34,31 +54,35 @@ interface CitaAgendada {
   barbero: string
   codigo: string
   servicio: string
+  precio: number
+  telefono: string
+  forma_pago: string
+  folio_transferencia?: string
 }
-
-const serviciosDisponibles = [
-  'Corte clásico',
-  'Corte moderno',
-  'Afeitado tradicional',
-  'Arreglo de barba',
-  'Corte y barba',
-  'Tinte de cabello',
-  'Peinado especial'
-]
 
 export default function AgendarCitaPage() {
   const { user } = useUser()
   const router = useRouter()
 
+  // Estados del formulario
   const [fecha, setFecha] = useState('')
   const [hora, setHora] = useState('')
   const [barberoId, setBarberoId] = useState('')
-  const [servicio, setServicio] = useState('')
+  const [servicioId, setServicioId] = useState('')
+  const [telefono, setTelefono] = useState('')
+  const [formaPago, setFormaPago] = useState('')
+  const [folioTransferencia, setFolioTransferencia] = useState('')
+
+  // Estados de datos
   const [barberos, setBarberos] = useState<Barbero[]>([])
+  const [servicios, setServicios] = useState<Servicio[]>([])
   const [loading, setLoading] = useState(false)
   const [citaAgendada, setCitaAgendada] = useState<CitaAgendada | null>(null)
   const [horasDisponibles, setHorasDisponibles] = useState<string[]>([])
   const [mensajeHorario, setMensajeHorario] = useState('')
+
+  // Servicio seleccionado
+  const servicioSeleccionado = servicios.find(s => s.id === Number(servicioId))
 
   // Obtener lista de barberos
   useEffect(() => {
@@ -71,12 +95,12 @@ export default function AgendarCitaPage() {
             'Content-Type': 'application/json'
           }
         })
-        
+
         if (!res.ok) {
           const errorData = await res.json()
           throw new Error(errorData.error || 'Error al cargar barberos')
         }
-        
+
         const data = await res.json()
         setBarberos(data)
       } catch (error: any) {
@@ -85,6 +109,33 @@ export default function AgendarCitaPage() {
       }
     }
     fetchBarberos()
+  }, [])
+
+  // Obtener lista de servicios
+  useEffect(() => {
+    const fetchServicios = async () => {
+      try {
+        const token = localStorage.getItem('token') || ''
+        const res = await fetch('/api/secciones?tipo=servicio', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+
+        if (!res.ok) {
+          const errorData = await res.json()
+          throw new Error(errorData.error || 'Error al cargar servicios')
+        }
+
+        const data = await res.json()
+        setServicios(data)
+      } catch (error: any) {
+        console.error('Error al cargar servicios:', error)
+        toast.error(error.message || 'Error al cargar la lista de servicios')
+      }
+    }
+    fetchServicios()
   }, [])
 
   // Obtener horarios disponibles cuando cambia fecha o barbero
@@ -97,36 +148,77 @@ export default function AgendarCitaPage() {
     }
   }, [fecha, barberoId])
 
+  // Función para formatear fecha correctamente sin problemas de zona horaria
+  const formatTicketDate = (dateString: string) => {
+    // Crear fecha local sin conversión UTC
+    const [year, month, day] = dateString.split('-')
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+
+    return date.toLocaleDateString('es-ES', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    })
+  }
+
+  // Función para obtener el día de la semana correctamente
+  const getDayOfWeek = (dateString: string) => {
+    const [year, month, day] = dateString.split('-')
+    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+
+    return date.toLocaleDateString('es-ES', { weekday: 'long' })
+  }
+
+  const [esOpcional, setEsOpcional] = useState(false)
+
+
+  // Corregir la función fetchHorariosDisponibles
   const fetchHorariosDisponibles = async () => {
     try {
       const token = localStorage.getItem('token') || ''
+      console.log('Solicitando horarios para fecha:', fecha, 'barbero:', barberoId)
+
       const res = await fetch(`/api/horarios?fecha=${fecha}&barbero=${barberoId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       })
-      
+
       if (!res.ok) {
         const errorData = await res.json()
         throw new Error(errorData.error || 'Error al obtener horarios')
       }
-      
+
       const data = await res.json()
-      
+      console.log('Respuesta del API:', data)
+
       if (data.mensaje) {
         setMensajeHorario(data.mensaje)
-        setHorasDisponibles([])
+        setHorasDisponibles(data.horarios || [])
+        setEsOpcional(data.esOpcional || false)
         return
       }
 
-      setHorasDisponibles(data.horarios)
-      setMensajeHorario(`Horarios disponibles para ${data.dia}`)
+      // Usar nuestra función local para obtener el día correcto
+      const dayName = getDayOfWeek(fecha)
+      setHorasDisponibles(data.horarios || [])
+      setEsOpcional(data.esOpcional || false)
+      setMensajeHorario(`Horarios disponibles para ${dayName}`)
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error al obtener horarios:', error)
-      toast.error(error.message || 'Error al cargar horarios disponibles')
+
+      // Manejar el error correctamente
+      const errorMessage = error instanceof Error
+        ? error.message
+        : 'Error al cargar horarios disponibles'
+
+      toast.error(errorMessage)
       setHorasDisponibles([])
+      setMensajeHorario('')
+      setEsOpcional(false)
     }
   }
 
@@ -146,21 +238,65 @@ export default function AgendarCitaPage() {
       return router.push('/login')
     }
 
+    // Validar fecha seleccionada - corregido para evitar problemas de zona horaria
+    const [year, month, day] = fecha.split('-')
+    const selectedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+
+    if (selectedDate < today) {
+      toast.error('No puedes agendar una cita en una fecha pasada')
+      return
+    }
+
+    if (!hora || horasDisponibles.length === 0) {
+      toast.error('Debes seleccionar una hora disponible')
+      return
+    }
+
+    // Validaciones adicionales
+    if (formaPago === 'transferencia' && !folioTransferencia) {
+      toast.error('Debes proporcionar el folio de la transferencia')
+      return
+    }
+
+    if (!telefono || telefono.length < 10) {
+      toast.error('Debes proporcionar un número de teléfono válido')
+      return
+    }
+
+    // ✅ NUEVA VALIDACIÓN: Confirmación extra para días opcionales (domingos)
+    if (esOpcional) {
+      const confirmacion = window.confirm(
+        '⚠️ Has seleccionado un domingo (día opcional).\n\n' +
+        'La disponibilidad puede variar. Te recomendamos contactar al barbero ' +
+        'para confirmar que estará disponible en el horario seleccionado.\n\n' +
+        '¿Deseas continuar con la reserva?'
+      )
+
+      if (!confirmacion) {
+        return // El usuario canceló
+      }
+    }
+
     try {
       setLoading(true)
 
       const res = await fetch('/api/citas', {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token') || ''}`
         },
         body: JSON.stringify({
           id_cliente: user.id,
           id_barbero: Number(barberoId),
+          id_servicio: Number(servicioId),
           fecha,
           hora,
-          servicio
+          telefono,
+          forma_pago: formaPago,
+          folio_transferencia: folioTransferencia || null
         })
       })
 
@@ -175,7 +311,11 @@ export default function AgendarCitaPage() {
         hora,
         barbero: data.barbero || barberos.find(b => b.id === Number(barberoId))?.nombre || '',
         codigo: data.codigo_reserva,
-        servicio: data.servicio
+        servicio: servicioSeleccionado?.nombre || '',
+        precio: servicioSeleccionado?.precio || 0,
+        telefono,
+        forma_pago: formaPago,
+        folio_transferencia: folioTransferencia || undefined
       })
 
       toast.success('Cita agendada correctamente. Revisa tu correo.', {
@@ -186,12 +326,15 @@ export default function AgendarCitaPage() {
           border: '1px solid #4ade80'
         }
       })
-      
+
       // Resetear formulario
       setFecha('')
       setHora('')
       setBarberoId('')
-      setServicio('')
+      setServicioId('')
+      setTelefono('')
+      setFormaPago('')
+      setFolioTransferencia('')
       setHorasDisponibles([])
 
     } catch (err: any) {
@@ -206,6 +349,12 @@ export default function AgendarCitaPage() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const isFormValid = () => {
+    const basicFields = fecha && hora && barberoId && servicioId && telefono && formaPago
+    const paymentValid = formaPago === 'establecimiento' || (formaPago === 'transferencia' && folioTransferencia)
+    return basicFields && paymentValid
   }
 
   const textVariants = {
@@ -224,12 +373,12 @@ export default function AgendarCitaPage() {
     <main className={`bg-[#0a0a0a] text-white min-h-screen ${barberFont.variable} ${vintageFont.variable}`}>
       {/* Hero Section */}
       <section className="relative h-64 md:h-96 flex items-center justify-center overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center filter brightness-50 contrast-110"
           style={{ backgroundPosition: 'center 30%' }}
         />
-        
-        <motion.div 
+
+        <motion.div
           className="relative z-10 text-center px-6 max-w-4xl mx-auto"
           initial="hidden"
           animate="visible"
@@ -250,7 +399,7 @@ export default function AgendarCitaPage() {
       <section className="py-16 px-6 max-w-6xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Formulario de Cita */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
@@ -262,28 +411,86 @@ export default function AgendarCitaPage() {
                 Reserva tu Turno
               </span>
             </h2>
-            
+
             <form onSubmit={handleAgendar} className="space-y-6">
+              {/* Teléfono */}
               <div>
                 <label className="flex items-center gap-2 text-gray-300 mb-2 font-vintage">
-                  <CalendarIcon size={18} /> Fecha
+                  <Phone size={18} /> Número de Teléfono *
+                </label>
+                <input
+                  type="tel"
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 text-white"
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                  placeholder="Ejemplo: 5551234567"
+                  required
+                />
+              </div>
+
+              {/* Servicio */}
+              <div>
+                <label className="flex items-center gap-2 text-gray-300 mb-2 font-vintage">
+                  <Scissors size={18} /> Elige tu Servicio *
+                </label>
+                <select
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 text-white"
+                  value={servicioId}
+                  onChange={(e) => setServicioId(e.target.value)}
+                  required
+                >
+                  <option value="">-- Selecciona un servicio --</option>
+                  {servicios.map((servicio) => (
+                    <option key={servicio.id} value={servicio.id}>
+                      {servicio.nombre} - ${servicio.precio}
+                    </option>
+                  ))}
+                </select>
+                {servicioSeleccionado && (
+                  <div className="mt-2 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="text-blue-300">Precio del servicio:</span>
+                      <span className="text-blue-300 font-bold text-lg">
+                        ${servicioSeleccionado.precio}
+                      </span>
+                    </div>
+                    {servicioSeleccionado.descripcion && (
+                      <p className="text-gray-400 text-sm mt-1">
+                        {servicioSeleccionado.descripcion}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="flex items-center gap-2 text-gray-300 mb-2 font-vintage">
+                  <CalendarIcon size={18} /> Fecha *
                 </label>
                 <input
                   type="date"
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 text-white"
                   value={fecha}
                   onChange={(e) => {
-                    setFecha(e.target.value)
-                    setHora('')
+                    const selectedDate = e.target.value
+                    console.log('Fecha seleccionada:', selectedDate)
+
+                    setFecha(selectedDate)
+                    setHora('') // Limpiar hora cuando cambie la fecha
                   }}
                   required
                   min={new Date().toISOString().split('T')[0]}
+                  max={(() => {
+                    const maxDate = new Date()
+                    maxDate.setDate(maxDate.getDate() + 30)
+                    return maxDate.toISOString().split('T')[0]
+                  })()}
                 />
               </div>
-              
+
               <div>
                 <label className="flex items-center gap-2 text-gray-300 mb-2 font-vintage">
-                  <Scissors size={18} /> Selecciona tu Barbero
+                  <User size={18} /> Selecciona tu Barbero *
                 </label>
                 <select
                   className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 text-white"
@@ -304,64 +511,106 @@ export default function AgendarCitaPage() {
               </div>
 
               {fecha && barberoId && (
-                <>
-                  <div>
-                    <label className="flex items-center gap-2 text-gray-300 mb-2 font-vintage">
-                      <Clock size={18} /> Hora Disponible
-                    </label>
-                    {mensajeHorario && (
-                      <p className="text-sm mb-2 text-gray-400">{mensajeHorario}</p>
-                    )}
-                    <select
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 text-white"
-                      value={hora}
-                      onChange={(e) => setHora(e.target.value)}
-                      required
-                      disabled={horasDisponibles.length === 0}
-                    >
-                      <option value="">-- Selecciona una hora --</option>
-                      {horasDisponibles.map((hora) => (
-                        <option key={hora} value={hora}>
-                          {hora}
-                        </option>
-                      ))}
-                    </select>
-                    {horasDisponibles.length === 0 && (
-                      <p className="text-red-400 text-sm mt-1">
-                        {mensajeHorario || 'No hay horarios disponibles para este día'}
-                      </p>
-                    )}
-                  </div>
+                <div>
+                  <label className="flex items-center gap-2 text-gray-300 mb-2 font-vintage">
+                    <Clock size={18} /> Hora Disponible *
+                  </label>
 
+                  {/* Mensaje especial para días opcionales */}
+                  {esOpcional && (
+                    <div className="mb-3 p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
+                      <div className="flex items-center gap-2 text-yellow-400 mb-2">
+                        <AlertTriangle size={18} />
+                        <span className="font-semibold font-barber">Día Opcional - Domingo</span>
+                      </div>
+                      <p className="text-yellow-300 text-sm mb-2 font-vintage">
+                        Los domingos la disponibilidad puede variar. Te recomendamos contactar
+                        al barbero antes de tu cita para confirmar que estará disponible.
+                      </p>
+                      <div className="flex items-center gap-2 text-yellow-200 text-sm">
+                        <Phone size={14} />
+                        <span>Contacto: +52 953 186 1790</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {mensajeHorario && (
+                    <p className={`text-sm mb-2 font-vintage ${esOpcional ? 'text-yellow-400' : 'text-gray-400'
+                      }`}>
+                      {mensajeHorario}
+                    </p>
+                  )}
+
+                  <select
+                    className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 text-white"
+                    value={hora}
+                    onChange={(e) => setHora(e.target.value)}
+                    required
+                    disabled={horasDisponibles.length === 0}
+                  >
+                    <option value="">-- Selecciona una hora --</option>
+                    {horasDisponibles.map((hora) => (
+                      <option key={hora} value={hora}>
+                        {hora} {esOpcional ? '(Confirmar disponibilidad)' : ''}
+                      </option>
+                    ))}
+                  </select>
+
+                  {horasDisponibles.length === 0 && (
+                    <p className="text-red-400 text-sm mt-1 font-vintage">
+                      {mensajeHorario || 'No hay horarios disponibles para este día'}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Forma de Pago */}
+              <div>
+                <label className="flex items-center gap-2 text-gray-300 mb-2 font-vintage">
+                  <CreditCard size={18} /> Forma de Pago *
+                </label>
+                <select
+                  className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 text-white"
+                  value={formaPago}
+                  onChange={(e) => setFormaPago(e.target.value)}
+                  required
+                >
+                  <option value="">-- Selecciona forma de pago --</option>
+                  <option value="establecimiento">Pago en establecimiento</option>
+                  <option value="transferencia">Transferencia bancaria</option>
+                </select>
+              </div>
+
+              {/* Tarjeta de información bancaria */}
+              {formaPago === 'transferencia' && (
+                <>
+                  <PaymentCard />
                   <div>
                     <label className="flex items-center gap-2 text-gray-300 mb-2 font-vintage">
-                      <Scissors size={18} /> Servicio
+                      <Receipt size={18} /> Folio/Referencia de Transferencia *
                     </label>
-                    <select
+                    <input
+                      type="text"
                       className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-600 text-white"
-                      value={servicio}
-                      onChange={(e) => setServicio(e.target.value)}
+                      value={folioTransferencia}
+                      onChange={(e) => setFolioTransferencia(e.target.value)}
+                      placeholder="Ingresa el folio o referencia de tu transferencia"
                       required
-                    >
-                      <option value="">-- Selecciona un servicio --</option>
-                      {serviciosDisponibles.map((serv) => (
-                        <option key={serv} value={serv}>
-                          {serv}
-                        </option>
-                      ))}
-                    </select>
+                    />
+                    <p className="text-gray-400 text-xs mt-1">
+                      Este folio nos ayudará a identificar tu pago
+                    </p>
                   </div>
                 </>
               )}
-              
+
               <motion.button
                 type="submit"
-                disabled={loading || !fecha || !hora || !barberoId || !servicio}
+                disabled={loading || !isFormValid()}
                 whileHover={{ scale: loading ? 1 : 1.03 }}
                 whileTap={{ scale: loading ? 1 : 0.97 }}
-                className={`w-full px-6 py-3 bg-gradient-to-r from-red-700 to-blue-700 hover:from-red-600 hover:to-blue-600 text-white font-medium rounded-lg transition-all duration-300 shadow-lg hover:shadow-red-500/20 ${
-                  loading || !fecha || !hora || !barberoId || !servicio ? 'opacity-70 cursor-not-allowed' : ''
-                }`}
+                className={`w-full px-6 py-3 bg-gradient-to-r from-red-700 to-blue-700 hover:from-red-600 hover:to-blue-600 text-white font-medium rounded-lg transition-all duration-300 shadow-lg hover:shadow-red-500/20 ${loading || !isFormValid() ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -379,7 +628,7 @@ export default function AgendarCitaPage() {
           </motion.div>
 
           {/* Ticket de Confirmación o Info */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
@@ -391,7 +640,7 @@ export default function AgendarCitaPage() {
                 <h2 className="text-3xl font-bold mb-6 text-center font-barber text-red-500">
                   TU CITA ESTÁ CONFIRMADA
                 </h2>
-                
+
                 <div className="space-y-6">
                   <div className="flex items-center gap-4">
                     <div className="text-red-500">
@@ -400,16 +649,11 @@ export default function AgendarCitaPage() {
                     <div>
                       <h3 className="text-xl font-semibold text-white font-barber">Fecha</h3>
                       <p className="text-gray-300 font-vintage">
-                        {new Date(citaAgendada.fecha).toLocaleDateString('es-ES', {
-                          weekday: 'long',
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        })}
+                        {formatTicketDate(citaAgendada.fecha)}
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-4">
                     <div className="text-red-500">
                       <Clock size={24} />
@@ -419,7 +663,7 @@ export default function AgendarCitaPage() {
                       <p className="text-gray-300 font-vintage">{citaAgendada.hora}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-4">
                     <div className="text-red-500">
                       <User size={24} />
@@ -429,7 +673,7 @@ export default function AgendarCitaPage() {
                       <p className="text-gray-300 font-vintage">{citaAgendada.barbero}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-4">
                     <div className="text-red-500">
                       <Scissors size={24} />
@@ -439,7 +683,44 @@ export default function AgendarCitaPage() {
                       <p className="text-gray-300 font-vintage">{citaAgendada.servicio}</p>
                     </div>
                   </div>
-                  
+
+                  <div className="flex items-center gap-4">
+                    <div className="text-red-500">
+                      <DollarSign size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-white font-barber">Precio</h3>
+                      <p className="text-gray-300 font-vintage">${citaAgendada.precio}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="text-red-500">
+                      <Phone size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-white font-barber">Teléfono</h3>
+                      <p className="text-gray-300 font-vintage">{citaAgendada.telefono}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="text-red-500">
+                      <CreditCard size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-white font-barber">Forma de Pago</h3>
+                      <p className="text-gray-300 font-vintage">
+                        {citaAgendada.forma_pago === 'establecimiento' ? 'Pago en establecimiento' : 'Transferencia bancaria'}
+                      </p>
+                      {citaAgendada.folio_transferencia && (
+                        <p className="text-blue-300 text-sm">
+                          Folio: {citaAgendada.folio_transferencia}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="pt-6 border-t border-gray-700">
                     <h3 className="text-xl font-semibold mb-2 text-center text-white font-barber">CÓDIGO DE RESERVA</h3>
                     <div className="bg-black text-center py-3 px-6 rounded-lg border-2 border-red-500">
@@ -458,7 +739,7 @@ export default function AgendarCitaPage() {
                     Instrucciones
                   </span>
                 </h2>
-                
+
                 <div className="space-y-4">
                   <div className="flex items-start gap-4">
                     <div className="text-red-500 mt-1">
@@ -473,7 +754,7 @@ export default function AgendarCitaPage() {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-4">
                     <div className="text-red-500 mt-1">
                       <AlertTriangle size={18} />
@@ -485,7 +766,7 @@ export default function AgendarCitaPage() {
                       </p>
                     </div>
                   </div>
-                  
+
                   {!user && (
                     <div className="pt-4 border-t border-gray-700">
                       <p className="text-yellow-400 font-vintage">

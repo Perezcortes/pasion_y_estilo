@@ -15,15 +15,16 @@ export function middleware(request: NextRequest) {
     const { rol } = decoded
 
     // Protege todas las rutas bajo /dashboard
-    if (request.nextUrl.pathname.startsWith('/login')) {
-      // Clientes no pueden acceder a dashboard
-      if (rol === 'CLIENTE') {
+    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+      // Solo ADMIN y BARBERO pueden acceder al dashboard
+      if (rol !== 'ADMIN' && rol !== 'BARBERO') {
         return NextResponse.redirect(new URL('/', request.url))
       }
     }
 
-    // Protege todas las rutas bajo /admin
-    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    // Si tienes rutas específicas para admin solamente
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+      // Solo ADMIN puede acceder a rutas /admin
       if (rol !== 'ADMIN') {
         return NextResponse.redirect(new URL('/', request.url))
       }
@@ -32,6 +33,7 @@ export function middleware(request: NextRequest) {
     // Si pasa todo, permite continuar
     return NextResponse.next()
   } catch (error) {
+    console.error('Error en middleware:', error)
     // Token inválido o error -> redirige login
     return NextResponse.redirect(new URL('/login', request.url))
   }
@@ -40,4 +42,3 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ['/dashboard/:path*', '/admin/:path*'], // Protege dashboard y admin y sus subrutas
 }
-

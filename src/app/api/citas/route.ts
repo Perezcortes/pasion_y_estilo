@@ -27,9 +27,14 @@ export async function GET(req: Request) {
       // Filtro específico por cliente (usado por el modal de historial)
       query = `
         SELECT c.*, 
-          u.nombre as cliente_nombre,
-          barbero.nombre as barbero_nombre,
-          c.servicio
+          u.nombre as nombre_cliente,
+          u.correo as correo_cliente,
+          barbero.nombre as nombre_barbero,
+          c.servicio,
+          c.telefono_cliente,
+          c.forma_pago,
+          c.folio_transferencia,
+          c.precio
         FROM citas c
         JOIN usuarios u ON c.id_cliente = u.id
         JOIN barberos b ON c.id_barbero = b.id
@@ -40,7 +45,13 @@ export async function GET(req: Request) {
       params = [parseInt(clienteId)]
     } else if (user.rol === 'CLIENTE') {
       query = `
-        SELECT c.*, u.nombre as nombre_barbero, b.especialidad as servicio
+        SELECT c.*, 
+          u.nombre as nombre_barbero, 
+          b.especialidad as servicio,
+          c.telefono_cliente,
+          c.forma_pago,
+          c.folio_transferencia,
+          c.precio
         FROM citas c
         JOIN barberos b ON c.id_barbero = b.id
         JOIN usuarios u ON b.id_usuario = u.id
@@ -66,7 +77,14 @@ export async function GET(req: Request) {
       }
 
       query = `
-        SELECT c.*, u.nombre as nombre_cliente, c.servicio
+        SELECT c.*, 
+          u.nombre as nombre_cliente,
+          u.correo as correo_cliente,
+          c.servicio,
+          c.telefono_cliente,
+          c.forma_pago,
+          c.folio_transferencia,
+          c.precio
         FROM citas c
         JOIN usuarios u ON c.id_cliente = u.id
         WHERE c.id_barbero = ? AND c.estado != 'CANCELADA'
@@ -77,8 +95,13 @@ export async function GET(req: Request) {
       query = `
         SELECT c.*, 
           cliente.nombre as nombre_cliente,
+          cliente.correo as correo_cliente,
           barbero.nombre as nombre_barbero,
-          c.servicio
+          c.servicio,
+          c.telefono_cliente,
+          c.forma_pago,
+          c.folio_transferencia,
+          c.precio
         FROM citas c
         JOIN usuarios cliente ON c.id_cliente = cliente.id
         JOIN barberos b ON c.id_barbero = b.id
@@ -121,11 +144,52 @@ export async function POST(req: Request) {
   }
 
   try {
-    const { id_barbero, fecha, hora, servicio } = await req.json()
+    const { 
+      id_barbero, 
+      id_servicio,
+      fecha, 
+      hora, 
+      telefono,
+      forma_pago,
+      folio_transferencia
+    } = await req.json()
 
     // Validaciones básicas
-    if (!id_barbero || !fecha || !hora) {
+    if (!id_barbero || !id_servicio || !fecha || !hora || !telefono || !forma_pago) {
       return new NextResponse(JSON.stringify({ error: 'Datos incompletos' }), {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      })
+    }
+
+    // Validar teléfono (mínimo 10 dígitos)
+    if (telefono.length < 10) {
+      return new NextResponse(JSON.stringify({ error: 'El teléfono debe tener al menos 10 dígitos' }), {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      })
+    }
+
+    // Validar forma de pago
+    if (!['establecimiento', 'transferencia'].includes(forma_pago)) {
+      return new NextResponse(JSON.stringify({ error: 'Forma de pago inválida' }), {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      })
+    }
+
+    // Si es transferencia, validar folio
+    if (forma_pago === 'transferencia' && !folio_transferencia) {
+      return new NextResponse(JSON.stringify({ error: 'Folio de transferencia requerido' }), {
         status: 400,
         headers: {
           'Content-Type': 'application/json',
@@ -175,6 +239,22 @@ export async function POST(req: Request) {
       })
     }
 
+    // Verificar que el servicio exista
+    const [servicio]: any = await db.query(
+      `SELECT nombre, precio FROM items_seccion WHERE id = ?`,
+      [id_servicio]
+    )
+
+    if (servicio.length === 0) {
+      return new NextResponse(JSON.stringify({ error: 'Servicio no encontrado' }), {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      })
+    }
+
     // Verificar que la fecha no sea en el pasado
     const fechaCita = new Date(`${fecha}T${hora}`)
     if (fechaCita < new Date()) {
@@ -187,18 +267,12 @@ export async function POST(req: Request) {
       })
     }
 
-    // Verificar disponibilidad (cada hora exacta)
-    const horaRedondeada = hora.split(':')[0] + ':00' // Redondear a hora exacta
-    
+    // Verificar disponibilidad
     const [citaExistente]: any = await db.query(
       `SELECT id FROM citas 
-       WHERE id_barbero = ? AND fecha = ? AND (
-         hora = ? OR 
-         hora = ? OR
-         hora LIKE '${hora.split(':')[0]}:%'
-       )
+       WHERE id_barbero = ? AND fecha = ? AND hora = ?
        AND estado IN ('PENDIENTE', 'CONFIRMADA')`,
-      [id_barbero, fecha, hora, horaRedondeada]
+      [id_barbero, fecha, hora]
     )
 
     if (citaExistente.length > 0) {
@@ -214,12 +288,25 @@ export async function POST(req: Request) {
     // Generar código de reserva único
     const codigo_reserva = `PE-${Math.floor(1000 + Math.random() * 9000)}`
 
-    // Crear la cita
+    // Crear la cita con todos los datos nuevos
     const [result]: any = await db.query(
       `INSERT INTO citas 
-       (id_cliente, id_barbero, fecha, hora, estado, codigo_reserva, servicio) 
-       VALUES (?, ?, ?, ?, 'PENDIENTE', ?, ?)`,
-      [user.id, id_barbero, fecha, hora, codigo_reserva, servicio || 'Corte general']
+       (id_cliente, id_barbero, fecha, hora, estado, codigo_reserva, servicio, 
+        telefono_cliente, correo_cliente, forma_pago, folio_transferencia, precio) 
+       VALUES (?, ?, ?, ?, 'PENDIENTE', ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        user.id, 
+        id_barbero, 
+        fecha, 
+        hora, 
+        codigo_reserva, 
+        servicio[0].nombre,
+        telefono,
+        user.correo,
+        forma_pago,
+        folio_transferencia || null,
+        servicio[0].precio
+      ]
     )
 
     return new NextResponse(JSON.stringify({
@@ -227,7 +314,10 @@ export async function POST(req: Request) {
       message: 'Cita agendada exitosamente',
       codigo_reserva,
       barbero: barbero[0].nombre,
-      servicio: servicio || 'Corte general'
+      servicio: servicio[0].nombre,
+      precio: servicio[0].precio,
+      forma_pago,
+      folio_transferencia: folio_transferencia || null
     }), {
       status: 200,
       headers: {

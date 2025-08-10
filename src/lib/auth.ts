@@ -11,6 +11,7 @@ export async function getUserFromToken() {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
       id: number
       rol: string
+      correo: string
     }
     return decoded
   } catch (err) {
