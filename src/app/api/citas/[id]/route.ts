@@ -55,7 +55,8 @@ export async function GET(request: NextRequest, context: Context) {
 }
 
 export async function PUT(request: NextRequest, context: Context) {
-  const { id } = context.params
+  const params = await context.params
+  const { id } = params
   const user = await getUserFromToken()
 
   if (!user || !['ADMIN', 'BARBERO'].includes(user.rol)) {

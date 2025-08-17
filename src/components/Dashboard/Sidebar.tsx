@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { useUser } from '../../app/hooks/useUser'
 import { NavItem } from '../../types/types'
 import { useState, useEffect } from 'react'
+import ProfileDashboard from '../Profile/ProfileDashboard'
 
 const navItems: NavItem[] = [
   {
@@ -51,6 +52,7 @@ export default function Sidebar({
   const { user } = useUser()
   const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
 
   // Persistir el tab activo en localStorage
   useEffect(() => {
@@ -106,7 +108,7 @@ export default function Sidebar({
       <div className="mt-auto">
         <button
           onClick={() => {
-            router.push('/perfil')
+            setIsProfileModalOpen(true)
             setIsMobileMenuOpen(false)
           }}
           className="flex items-center px-4 py-3 text-sm font-medium text-gray-300 hover:text-white rounded-lg w-full hover:bg-gray-700 transition-all mb-2"
@@ -198,6 +200,12 @@ export default function Sidebar({
           </div>
         </div>
       </motion.div>
+
+      {/* Modal de perfil */}
+      <ProfileDashboard
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
     </>
   )
 }
