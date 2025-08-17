@@ -6,6 +6,7 @@ import { useUser } from '../../hooks/useUser'
 import { useDashboardStats } from '../../hooks/useDashboardStats'
 import Sidebar from '../../../components/Dashboard/Sidebar'
 import DashboardContent from '../../../components/Dashboard/DashboardContent'
+import DashboardCharts from '../../../components/Dashboard/DashboardCharts' // Nuevo import
 import { motion } from 'framer-motion'
 import { fadeIn } from '../../../lib/motion'
 import { FiCalendar, FiUsers, FiDollarSign, FiScissors, FiSun, FiBell, FiRefreshCw } from 'react-icons/fi'
@@ -52,7 +53,7 @@ export default function DashboardPage() {
       borderColor: 'border-purple-500/30'
     },
     { 
-      title: 'Servicios', 
+      title: 'Cortes', 
       value: (stats.servicios.total || 0).toString(), 
       change: stats.servicios.cambioTexto || '', 
       icon: <FiScissors className="text-green-400" size={20} />,
@@ -209,11 +210,20 @@ export default function DashboardPage() {
                 )}
               </motion.div>
 
+              {/* Gráficos Interactivos - NUEVA SECCIÓN */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
+              >
+                <DashboardCharts stats={stats} loading={statsLoading} />
+              </motion.div>
+
               {/* Dashboard Content */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
+                transition={{ duration: 0.5, delay: 0.8 }}
               >
                 <DashboardContent activeTab={activeTab} />
               </motion.div>
