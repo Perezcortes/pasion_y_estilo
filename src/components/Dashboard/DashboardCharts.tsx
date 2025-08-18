@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 import { FiTrendingUp, FiUsers, FiDollarSign, FiCalendar } from 'react-icons/fi'
 
-// Hook para obtener estadísticas de servicios (debes crearlo en tu carpeta hooks)
+// Hook para obtener estadísticas de servicios
 import { useServicesStats } from '../../app/hooks/useServicesStats'
 
 interface DashboardChartsProps {
@@ -34,6 +34,29 @@ interface DashboardChartsProps {
   loading: boolean
 }
 
+// Función helper para validar y sanitizar números
+const safeNumber = (value: any, fallback: number = 0): number => {
+  const num = Number(value)
+  return isNaN(num) || !isFinite(num) ? fallback : num
+}
+
+// Función helper para formatear moneda
+const formatCurrency = (value: any): string => {
+  const num = safeNumber(value, 0)
+  return new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2
+  }).format(num)
+}
+
+// Función helper para formatear números
+const formatNumber = (value: any): string => {
+  const num = safeNumber(value, 0)
+  return num.toLocaleString('es-CL')
+}
+
 export default function DashboardCharts({ stats, loading }: DashboardChartsProps) {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d')
   const [clientsData, setClientsData] = useState<any[]>([])
@@ -42,7 +65,27 @@ export default function DashboardCharts({ stats, loading }: DashboardChartsProps
   // Hook para obtener datos reales de servicios populares
   const { servicesStats, loading: servicesLoading, error: servicesError, refetch: refetchServices } = useServicesStats()
 
-  // Generar datos simulados para los gráficos (en un caso real, estos vendrían de tu API)
+  // Obtener valores seguros de stats
+  const safeStats = {
+    clientesActivos: {
+      total: safeNumber(stats?.clientesActivos?.total, 0),
+      cambio: safeNumber(stats?.clientesActivos?.cambio, 0),
+      cambioTexto: stats?.clientesActivos?.cambioTexto || '0%'
+    },
+    ingresosTotales: {
+      total: safeNumber(stats?.ingresosTotales?.total, 0),
+      cambio: safeNumber(stats?.ingresosTotales?.cambio, 0),
+      cambioTexto: stats?.ingresosTotales?.cambioTexto || '0%',
+      ingresosHoy: safeNumber(stats?.ingresosTotales?.ingresosHoy, 0)
+    },
+    servicios: {
+      total: safeNumber(stats?.servicios?.total, 0),
+      cambio: safeNumber(stats?.servicios?.cambio, 0),
+      cambioTexto: stats?.servicios?.cambioTexto || '0%'
+    }
+  }
+
+  // Generar datos simulados para los gráficos
   useEffect(() => {
     if (!stats) return
 
@@ -54,7 +97,7 @@ export default function DashboardCharts({ stats, loading }: DashboardChartsProps
       const date = new Date(today)
       date.setDate(date.getDate() - (days - 1 - i))
       
-      const baseClients = Math.max(0, stats.clientesActivos.total - (days - i) * 2)
+      const baseClients = Math.max(0, safeStats.clientesActivos.total - (days - i) * 2)
       const randomVariation = Math.floor(Math.random() * 10) - 5
       
       return {
@@ -63,7 +106,7 @@ export default function DashboardCharts({ stats, loading }: DashboardChartsProps
           day: 'numeric' 
         }),
         clientes: Math.max(0, baseClients + randomVariation),
-        nuevos: Math.floor(Math.random() * 3) + 1
+        nuevos: Math.max(0, Math.floor(Math.random() * 3) + 1)
       }
     })
 
@@ -84,7 +127,7 @@ export default function DashboardCharts({ stats, loading }: DashboardChartsProps
           day: 'numeric' 
         }),
         ingresos: Math.max(0, baseRevenue + randomVariation),
-        citas: Math.floor(Math.random() * 15) + 5
+        citas: Math.max(0, Math.floor(Math.random() * 15) + 5)
       }
     })
 
@@ -92,16 +135,25 @@ export default function DashboardCharts({ stats, loading }: DashboardChartsProps
     setRevenueData(revenueChartData)
   }, [stats, timeRange])
 
-  // Datos para gráfico de distribución de servicios - AHORA CON DATOS REALES
-  const servicesData = servicesStats?.serviciosPopulares.map(servicio => ({
-    name: servicio.nombre,
-    value: servicio.porcentaje,
-    cantidad: servicio.cantidad,
-    precio_promedio: servicio.precio_promedio,
-    color: servicio.color
+  // Datos para gráfico de distribución de servicios - CON VALIDACIÓN
+  const servicesData = servicesStats?.serviciosPopulares?.map((servicio, index) => ({
+    name: String(servicio.nombre || `Servicio ${index + 1}`),
+    value: safeNumber(servicio.porcentaje, 0),
+    cantidad: safeNumber(servicio.cantidad, 0),
+    precio_promedio: safeNumber(servicio.precio_promedio, 0),
+    color: servicio.color || `hsl(${index * 60}, 70%, 60%)`
   })) || [
     { name: 'Sin datos', value: 100, cantidad: 0, precio_promedio: 0, color: '#6b7280' }
   ]
+
+  // Calcular promedios de forma segura
+  const averageRevenue = revenueData.length > 0 
+    ? safeNumber(revenueData.reduce((acc, day) => acc + safeNumber(day.ingresos, 0), 0) / revenueData.length)
+    : 0
+
+  const averageCitas = revenueData.length > 0 
+    ? Math.round(revenueData.reduce((acc, day) => acc + safeNumber(day.citas, 0), 0) / revenueData.length)
+    : 0
 
   if (loading) {
     return (
@@ -161,7 +213,7 @@ export default function DashboardCharts({ stats, loading }: DashboardChartsProps
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-blue-400">
-                {stats?.clientesActivos.total || 0}
+                {formatNumber(safeStats.clientesActivos.total)}
               </p>
               <p className="text-xs text-gray-400">Total actual</p>
             </div>
@@ -189,6 +241,7 @@ export default function DashboardCharts({ stats, loading }: DashboardChartsProps
                   color: '#ffffff'
                 }}
                 labelStyle={{ color: '#9ca3af' }}
+                formatter={(value: any) => [formatNumber(value), '']}
               />
               <Line
                 type="monotone"
@@ -235,7 +288,7 @@ export default function DashboardCharts({ stats, loading }: DashboardChartsProps
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-green-400">
-                ${(stats?.ingresosTotales.ingresosHoy || 0).toFixed(2)}
+                {formatCurrency(safeStats.ingresosTotales.ingresosHoy)}
               </p>
               <p className="text-xs text-gray-400">Hoy</p>
             </div>
@@ -254,7 +307,7 @@ export default function DashboardCharts({ stats, loading }: DashboardChartsProps
                 stroke="#9ca3af"
                 fontSize={12}
                 tickLine={false}
-                tickFormatter={(value) => `$${value}`}
+                tickFormatter={(value) => formatCurrency(value)}
               />
               <Tooltip
                 contentStyle={{
@@ -264,7 +317,7 @@ export default function DashboardCharts({ stats, loading }: DashboardChartsProps
                   color: '#ffffff'
                 }}
                 labelStyle={{ color: '#9ca3af' }}
-                formatter={(value: any) => [`$${value}`, 'Ingresos']}
+                formatter={(value: any) => [formatCurrency(value), 'Ingresos']}
               />
               <Bar
                 dataKey="ingresos"
@@ -343,7 +396,7 @@ export default function DashboardCharts({ stats, loading }: DashboardChartsProps
                       color: '#ffffff'
                     }}
                     formatter={(value: any, name, props) => [
-                      `${value}% (${props.payload.cantidad} citas)`, 
+                      `${safeNumber(value, 0).toFixed(1)}% (${safeNumber(props.payload.cantidad, 0)} citas)`, 
                       'Porcentaje'
                     ]}
                   />
@@ -361,8 +414,8 @@ export default function DashboardCharts({ stats, loading }: DashboardChartsProps
                       <span className="text-gray-300 truncate">{service.name}</span>
                     </div>
                     <div className="text-right ml-2">
-                      <div className="text-white font-medium">{service.value.toFixed(1)}%</div>
-                      <div className="text-gray-400">({service.cantidad} citas)</div>
+                      <div className="text-white font-medium">{safeNumber(service.value, 0).toFixed(1)}%</div>
+                      <div className="text-gray-400">({formatNumber(service.cantidad)} citas)</div>
                     </div>
                   </div>
                 ))}
@@ -387,30 +440,30 @@ export default function DashboardCharts({ stats, loading }: DashboardChartsProps
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-sm">Promedio ingresos/día</span>
               <span className="text-white font-semibold">
-                ${(revenueData.reduce((acc, day) => acc + day.ingresos, 0) / revenueData.length).toFixed(2)}
+                {formatCurrency(averageRevenue)}
               </span>
             </div>
             
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-sm">Promedio citas/día</span>
               <span className="text-white font-semibold">
-                {Math.round(revenueData.reduce((acc, day) => acc + day.citas, 0) / revenueData.length)}
+                {formatNumber(averageCitas)}
               </span>
             </div>
             
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-sm">Crecimiento clientes</span>
               <span className={`font-semibold ${
-                (stats?.clientesActivos.cambio || 0) >= 0 ? 'text-green-400' : 'text-red-400'
+                safeStats.clientesActivos.cambio >= 0 ? 'text-green-400' : 'text-red-400'
               }`}>
-                {stats?.clientesActivos.cambioTexto || '0'}
+                {safeStats.clientesActivos.cambioTexto}
               </span>
             </div>
             
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-sm">Total servicios</span>
               <span className="text-white font-semibold">
-                {stats?.servicios.total || 0}
+                {formatNumber(safeStats.servicios.total)}
               </span>
             </div>
           </div>
