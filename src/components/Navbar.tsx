@@ -12,7 +12,7 @@ import ProfileModal from './Profile/ProfileModal'
 import AppointmentsHistory from './Profile/AppointmentsHistory'
 
 // Configuración de fuentes
-const barberFont = Oswald({ 
+const barberFont = Oswald({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
   variable: '--font-barber'
@@ -72,10 +72,10 @@ export default function Navbar() {
       const response = await fetch('/api/auth/me')
       if (response.ok) {
         const userData = await response.json()
-        
+
         // Tu endpoint actual puede devolver { user: userData } o directamente userData
         const userInfo = userData.user || userData
-        
+
         if (userInfo) {
           setFullUserData({
             id: userInfo.id,
@@ -90,20 +90,47 @@ export default function Navbar() {
     }
   }
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     const nombre = user?.nombre
-    localStorage.removeItem('nombre')
-    localStorage.removeItem('rol')
-    localStorage.removeItem('token')
-    setUser(null)
-    setSubmenuOpen(false)
 
-    toast.success(`Hasta luego, ${nombre}`, {
-      icon: '👋',
-      duration: 3000,
-    })
+    try {
+      // 1. Llamar al endpoint de logout para eliminar la cookie HTTP-only
+      const response = await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include', // Importante para incluir las cookies
+      })
 
-    window.location.href = '/'
+      // 2. Limpiar localStorage (si lo estás usando para algo más)
+      localStorage.removeItem('nombre')
+      localStorage.removeItem('rol')
+      localStorage.removeItem('token')
+
+      // 3. Limpiar estado de la aplicación
+      setUser(null)
+      setSubmenuOpen(false)
+
+      // 4. Mostrar mensaje de éxito
+      toast.success(`Hasta luego, ${nombre}`, {
+        icon: '👋',
+        duration: 3000,
+      })
+
+      // 5. Redirigir al home
+      window.location.href = '/'
+
+    } catch (error) {
+      console.error('Error en logout:', error)
+
+      // Incluso si hay error con el servidor, limpiar el estado local
+      localStorage.removeItem('nombre')
+      localStorage.removeItem('rol')
+      localStorage.removeItem('token')
+      setUser(null)
+      setSubmenuOpen(false)
+
+      toast.error('Error al cerrar sesión, pero se limpiaron los datos locales')
+      window.location.href = '/'
+    }
   }
 
   const handleProfileClick = () => {
@@ -138,7 +165,7 @@ export default function Navbar() {
     { name: 'INICIO', href: '/' },
     { name: 'SERVICIOS', href: 'servicios' },
     { name: 'CITAS', href: 'citas', special: true },
-    { name: 'BLOG', href: '#blog' },
+    { name: 'PROPINAS', href: 'propinas' },
     { name: 'CONTACTO', href: 'contacto' },
   ]
 
@@ -147,12 +174,11 @@ export default function Navbar() {
   return (
     <>
       {/* Backdrop blur effect */}
-      <div 
-        className={`fixed top-0 left-0 w-full h-20 z-40 transition-all duration-500 ${
-          scrolled ? 'bg-black/20 backdrop-blur-md' : 'bg-transparent'
-        }`}
+      <div
+        className={`fixed top-0 left-0 w-full h-20 z-40 transition-all duration-500 ${scrolled ? 'bg-black/20 backdrop-blur-md' : 'bg-transparent'
+          }`}
       />
-      
+
       <motion.nav
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -160,10 +186,9 @@ export default function Navbar() {
         className={`fixed top-0 left-0 w-full z-50 transition-all duration-500 ${barberFont.variable} ${vintageFont.variable}`}
       >
         {/* Gradient border effect */}
-        <div className={`absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-500/50 to-transparent transition-opacity duration-500 ${
-          scrolled ? 'opacity-100' : 'opacity-0'
-        }`} />
-        
+        <div className={`absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-red-500/50 to-transparent transition-opacity duration-500 ${scrolled ? 'opacity-100' : 'opacity-0'
+          }`} />
+
         <div className="container mx-auto flex items-center justify-between px-6 py-4">
           {/* Logo mejorado */}
           <motion.div
@@ -173,12 +198,12 @@ export default function Navbar() {
             <Link href="/" className="flex items-center space-x-3 group">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-blue-500 rounded-full blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
-                <Image 
-                  src="/logo.png" 
-                  alt="Logo" 
-                  width={44} 
-                  height={44} 
-                  className="relative h-11 w-11 rounded-full border-2 border-white/20" 
+                <Image
+                  src="/logo.png"
+                  alt="Logo"
+                  width={44}
+                  height={44}
+                  className="relative h-11 w-11 rounded-full border-2 border-white/20"
                 />
               </div>
               <div className="flex flex-col">
@@ -203,11 +228,10 @@ export default function Navbar() {
               >
                 <Link
                   href={link.href}
-                  className={`relative px-4 py-2 mx-1 text-sm font-semibold uppercase tracking-wider transition-all duration-300 group font-barber ${
-                    link.special 
-                      ? 'text-white bg-gradient-to-r from-red-600 to-red-700 rounded-full hover:from-red-500 hover:to-red-600 shadow-lg hover:shadow-red-500/25' 
+                  className={`relative px-4 py-2 mx-1 text-sm font-semibold uppercase tracking-wider transition-all duration-300 group font-barber ${link.special
+                      ? 'text-white bg-gradient-to-r from-red-600 to-red-700 rounded-full hover:from-red-500 hover:to-red-600 shadow-lg hover:shadow-red-500/25'
                       : 'text-white/90 hover:text-white'
-                  }`}
+                    }`}
                 >
                   {!link.special && (
                     <>
@@ -260,7 +284,7 @@ export default function Navbar() {
                         <p className="text-white font-semibold text-sm font-barber">{user.nombre}</p>
                         <p className="text-gray-400 text-xs">{user.rol === 'CLIENTE' ? 'Cliente' : 'Usuario'}</p>
                       </div>
-                      
+
                       {/* Menu items */}
                       <motion.div
                         initial={{ opacity: 0, x: -10 }}
@@ -289,7 +313,7 @@ export default function Navbar() {
                           <span className="font-barber font-medium">MIS CITAS</span>
                         </button>
                       </motion.div>
-                      
+
                       {/* Logout button */}
                       <div className="border-t border-white/10 mt-2 pt-2">
                         <motion.button
@@ -323,9 +347,9 @@ export default function Navbar() {
             )}
 
             {/* Mobile menu button */}
-            <motion.button 
+            <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={toggleMenu} 
+              onClick={toggleMenu}
               className="lg:hidden text-white p-2 rounded-lg hover:bg-white/10 transition-colors duration-200"
             >
               <motion.div
@@ -359,11 +383,10 @@ export default function Navbar() {
                     <Link
                       href={link.href}
                       onClick={() => setIsOpen(false)}
-                      className={`block px-4 py-3 rounded-lg transition-all duration-300 font-barber font-semibold uppercase tracking-wider ${
-                        link.special
+                      className={`block px-4 py-3 rounded-lg transition-all duration-300 font-barber font-semibold uppercase tracking-wider ${link.special
                           ? 'text-white bg-gradient-to-r from-red-600 to-red-700 text-center'
                           : 'text-white hover:bg-white/5 hover:translate-x-2'
-                      }`}
+                        }`}
                     >
                       {link.name}
                     </Link>
@@ -388,7 +411,7 @@ export default function Navbar() {
                         </div>
                         <p className="text-gray-400 text-xs text-center">Cliente activo</p>
                       </div>
-                      
+
                       {/* Mobile menu buttons */}
                       <button
                         onClick={() => {
@@ -400,7 +423,7 @@ export default function Navbar() {
                         <User size={16} />
                         <span>MI PERFIL</span>
                       </button>
-                      
+
                       <button
                         onClick={() => {
                           setIsOpen(false)
@@ -444,7 +467,7 @@ export default function Navbar() {
             user={fullUserData}
             onUserUpdate={handleUserUpdate}
           />
-          
+
           <AppointmentsHistory
             isOpen={showAppointmentsModal}
             onClose={() => setShowAppointmentsModal(false)}
