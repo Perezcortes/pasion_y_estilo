@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast';
+import { CheckCircle } from 'lucide-react'
 import { fadeIn } from '../../../lib/motion'
 import { useAuth } from '../../../context/AuthContext'
 
@@ -49,8 +50,8 @@ export default function LoginPage() {
     setError('')
 
     try {
-      console.log('Intentando login con:', formData.correo)
-      
+      //console.log('Intentando login con:', formData.correo)
+
       // 1) Hacer login
       const res = await fetch('/api/usuarios/login', {
         method: 'POST',
@@ -60,29 +61,29 @@ export default function LoginPage() {
       })
 
       const data = await res.json()
-      console.log('Respuesta del login:', data)
-      
+      //console.log('Respuesta del login:', data)
+
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Error al iniciar sesión')
       }
 
       // 2) Obtener datos del usuario desde la cookie recién seteada
-      console.log('Obteniendo datos del usuario...')
+      //console.log('Obteniendo datos del usuario...')
       const meRes = await fetch('/api/auth/me', {
         method: 'GET',
         credentials: 'include',
       })
 
-      console.log('Status de /api/auth/me:', meRes.status)
-      
+      //console.log('Status de /api/auth/me:', meRes.status)
+
       if (!meRes.ok) {
         throw new Error('No se pudieron obtener los datos del usuario.')
       }
 
       // Tu endpoint ahora devuelve directamente los datos del usuario
       const userData: UserData = await meRes.json()
-      console.log('Datos del usuario obtenidos:', userData)
-      
+      //console.log('Datos del usuario obtenidos:', userData)
+
       if (!userData || !userData.id) {
         throw new Error('Usuario no encontrado')
       }
@@ -97,25 +98,25 @@ export default function LoginPage() {
 
       toast.success(`Bienvenido, ${userData.nombre}`, {
         duration: 2500,
-        icon: '🎉',
+        icon: <CheckCircle className="w-5 h-5" />,
       })
 
       // 5) Redirigir según rol
       switch (userData.rol) {
         case 'ADMIN':
         case 'BARBERO':
-          console.log('Redirigiendo a dashboard...')
+          //console.log('Redirigiendo a dashboard...')
           router.push('/dashboard')
           break
         case 'CLIENTE':
-          console.log('Redirigiendo a home...')
+          //console.log('Redirigiendo a home...')
           router.push('/')
           break
         default:
           setError('Rol no válido')
       }
     } catch (err: any) {
-      console.error('Error en login:', err)
+      //console.error('Error en login:', err)
       setError(err?.message || 'Error inesperado')
       toast.error(err?.message || 'Error al iniciar sesión')
     } finally {
@@ -210,12 +211,6 @@ export default function LoginPage() {
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-300">
                   Recordarme
                 </label>
-              </div>
-
-              <div className="text-sm">
-                <Link href="/recuperar-contrasena" className="font-medium text-blue-400 hover:text-blue-300">
-                  ¿Olvidaste tu contraseña?
-                </Link>
               </div>
             </div>
 

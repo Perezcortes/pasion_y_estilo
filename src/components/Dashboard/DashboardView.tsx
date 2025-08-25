@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { fadeIn } from '../../lib/motion'
 import BarberoCharts from './BarberoCharts'
 import { FiRefreshCw, FiAlertCircle } from 'react-icons/fi'
+import { Scissors } from 'lucide-react'
 
 export default function DashboardView() {
   const { user } = useUser()
@@ -23,14 +24,15 @@ export default function DashboardView() {
           {/* Header personalizado */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-white">
-                ¡Bienvenido, {user.nombre}! 👋
+              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                ¡Bienvenido, {user.nombre}!
+                <Scissors className="w-6 h-6 text-blue-400" />
               </h1>
               <p className="text-gray-400 mt-1">
                 Aquí tienes un resumen de tu actividad como barbero
               </p>
             </div>
-            
+
             {/* Botón de actualizar */}
             <button
               onClick={refetch}
@@ -84,7 +86,7 @@ export default function DashboardView() {
                   💪 ¡Sigue así, {user.nombre}!
                 </h3>
                 <p className="text-gray-300 text-sm">
-                  {stats.resumen.citasHoy.total > 0 
+                  {stats.resumen.citasHoy.total > 0
                     ? `Has atendido ${stats.resumen.citasHoy.total} cliente${stats.resumen.citasHoy.total !== 1 ? 's' : ''} hoy. ¡Excelente trabajo!`
                     : 'Aún no tienes citas completadas hoy, pero el día apenas comienza.'
                   }

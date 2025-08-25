@@ -79,7 +79,7 @@ export default function RegisterPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gray-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8"
+      className="min-h-screen bg-gray-900 flex flex-col py-28 sm:px-6 lg:px-8"
     >
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <motion.div

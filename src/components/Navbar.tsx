@@ -111,7 +111,7 @@ export default function Navbar() {
 
       // 4. Mostrar mensaje de éxito
       toast.success(`Hasta luego, ${nombre}`, {
-        icon: '👋',
+        icon: <LogOut className="w-4 h-4" />,
         duration: 3000,
       })
 
@@ -229,8 +229,8 @@ export default function Navbar() {
                 <Link
                   href={link.href}
                   className={`relative px-4 py-2 mx-1 text-sm font-semibold uppercase tracking-wider transition-all duration-300 group font-barber ${link.special
-                      ? 'text-white bg-gradient-to-r from-red-600 to-red-700 rounded-full hover:from-red-500 hover:to-red-600 shadow-lg hover:shadow-red-500/25'
-                      : 'text-white/90 hover:text-white'
+                    ? 'text-white bg-gradient-to-r from-red-600 to-red-700 rounded-full hover:from-red-500 hover:to-red-600 shadow-lg hover:shadow-red-500/25'
+                    : 'text-white/90 hover:text-white'
                     }`}
                 >
                   {!link.special && (
@@ -384,8 +384,8 @@ export default function Navbar() {
                       href={link.href}
                       onClick={() => setIsOpen(false)}
                       className={`block px-4 py-3 rounded-lg transition-all duration-300 font-barber font-semibold uppercase tracking-wider ${link.special
-                          ? 'text-white bg-gradient-to-r from-red-600 to-red-700 text-center'
-                          : 'text-white hover:bg-white/5 hover:translate-x-2'
+                        ? 'text-white bg-gradient-to-r from-red-600 to-red-700 text-center'
+                        : 'text-white hover:bg-white/5 hover:translate-x-2'
                         }`}
                     >
                       {link.name}

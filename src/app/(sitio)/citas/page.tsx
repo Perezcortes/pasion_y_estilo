@@ -177,7 +177,7 @@ export default function AgendarCitaPage() {
   const fetchHorariosDisponibles = async () => {
     try {
       const token = localStorage.getItem('token') || ''
-      console.log('Solicitando horarios para fecha:', fecha, 'barbero:', barberoId)
+      //('Solicitando horarios para fecha:', fecha, 'barbero:', barberoId)
 
       const res = await fetch(`/api/horarios?fecha=${fecha}&barbero=${barberoId}`, {
         headers: {
@@ -192,7 +192,7 @@ export default function AgendarCitaPage() {
       }
 
       const data = await res.json()
-      console.log('Respuesta del API:', data)
+      //console.log('Respuesta del API:', data)
 
       if (data.mensaje) {
         setMensajeHorario(data.mensaje)
@@ -473,7 +473,7 @@ export default function AgendarCitaPage() {
                   value={fecha}
                   onChange={(e) => {
                     const selectedDate = e.target.value
-                    console.log('Fecha seleccionada:', selectedDate)
+                    //console.log('Fecha seleccionada:', selectedDate)
 
                     setFecha(selectedDate)
                     setHora('') // Limpiar hora cuando cambie la fecha

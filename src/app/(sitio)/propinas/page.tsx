@@ -230,7 +230,7 @@ export default function PropinasPage() {
     return (
         <main className={`bg-[#0a0a0a] text-white min-h-screen ${barberFont.variable} ${vintageFont.variable}`}>
             {/* Hero Section */}
-            <section className="relative h-64 md:h-96 flex items-center justify-center overflow-hidden">
+            <section className="relative h-96 md:h-screen/2 flex items-center justify-center overflow-hidden">
                 <div
                     className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1503951914875-452162b0f3f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')] bg-cover bg-center filter brightness-50 contrast-110"
                     style={{ backgroundPosition: 'center 30%' }}

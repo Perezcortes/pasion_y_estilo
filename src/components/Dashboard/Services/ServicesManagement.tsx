@@ -99,7 +99,7 @@ export default function ServicesManagement() {
             if (!res.ok) throw new Error('Error al cargar items')
 
             const data = await res.json()
-            console.log('🔥 Datos de items cargados:', data); // Debug
+            //console.log('🔥 Datos de items cargados:', data); // Debug
 
             if (data.success) {
                 // Asegurarse de que cada item tenga seccion_id
@@ -108,7 +108,7 @@ export default function ServicesManagement() {
                     seccion_id: item.seccion_id || seccionId // Agregar seccion_id si falta
                 }));
 
-                console.log('🔥 Items procesados:', itemsConSeccionId); // Debug
+                //console.log('🔥 Items procesados:', itemsConSeccionId); // Debug
                 setItems(itemsConSeccionId)
                 setSeccionSeleccionada(seccionId)
             } else {
@@ -159,7 +159,7 @@ export default function ServicesManagement() {
                 newValue = value;
             }
 
-            console.log(`Cambio en ${name}:`, newValue);
+            //console.log(`Cambio en ${name}:`, newValue);
 
             return {
                 ...prev,
@@ -218,19 +218,19 @@ export default function ServicesManagement() {
     }
 
     const guardarItem = async (e: React.FormEvent) => {
-        console.log('🔥 guardarItem ejecutándose...'); // Debug
+        //console.log('🔥 guardarItem ejecutándose...'); // Debug
         e.preventDefault();
         e.stopPropagation();
 
-        console.log('🔥 Estado actual:', {
+        /*console.log('🔥 Estado actual:', {
             itemEditando,
             formItemData,
             seccionSeleccionada
-        }); // Debug
+        }); // Debug*/
 
         // Validación mejorada
         if (!formItemData.nombre || !formItemData.nombre.trim()) {
-            console.log('❌ Error: Nombre vacío');
+            //console.log('❌ Error: Nombre vacío');
             toast.error('Por favor ingrese un nombre válido para el item');
             return;
         }
@@ -246,21 +246,21 @@ export default function ServicesManagement() {
             seccionId = formItemData.seccion_id || seccionSeleccionada;
         }
 
-        console.log('🔥 Verificando sección:', {
+        /*console.log('🔥 Verificando sección:', {
             itemEditando: !!itemEditando,
             seccionIdFromItem: itemEditando?.seccion_id,
             seccionIdFromForm: formItemData.seccion_id,
             seccionSeleccionada,
             seccionIdFinal: seccionId
-        });
+        });*/
 
         if (!seccionId || seccionId === 0 || isNaN(Number(seccionId))) {
-            console.log('❌ Error: Sección inválida', { seccionId });
+            //console.log('❌ Error: Sección inválida', { seccionId });
             toast.error('Seleccione una sección válida');
             return;
         }
 
-        console.log('🔥 Datos a enviar:', { itemEditando, formItemData, seccionId }); // Debug
+        //console.log('🔥 Datos a enviar:', { itemEditando, formItemData, seccionId }); // Debug
 
         const loadingToast = toast.loading(
             itemEditando ? 'Actualizando item...' : 'Creando item...'
@@ -284,8 +284,8 @@ export default function ServicesManagement() {
                 es_destacado: Boolean(formItemData.es_destacado)
             };
 
-            console.log('🔥 Payload final:', payload); // Debug
-            console.log('🔥 URL:', url, 'Method:', method); // Debug
+            //console.log('🔥 Payload final:', payload); // Debug
+            //console.log('🔥 URL:', url, 'Method:', method); // Debug
 
             const res = await fetch(url, {
                 method,
@@ -293,13 +293,13 @@ export default function ServicesManagement() {
                 body: JSON.stringify(payload)
             });
 
-            console.log('🔥 Response status:', res.status); // Debug
+            //console.log('🔥 Response status:', res.status); // Debug
 
             const data = await res.json();
-            console.log('🔥 Response data:', data); // Debug
+            //console.log('🔥 Response data:', data); // Debug
 
             if (!res.ok) {
-                console.error('❌ Error en respuesta:', data);
+                //console.error('❌ Error en respuesta:', data);
                 throw new Error(data.error || `Error ${res.status}: ${res.statusText}`);
             }
 
@@ -313,7 +313,7 @@ export default function ServicesManagement() {
             cerrarModalItem();
 
         } catch (error: any) {
-            console.error('❌ Error al guardar item:', error);
+            //console.error('❌ Error al guardar item:', error);
             toast.error(
                 error.message || '❌ Error al conectar con el servidor',
                 { id: loadingToast }
@@ -322,7 +322,7 @@ export default function ServicesManagement() {
     };
 
     const handleSubmitClick = (e: React.MouseEvent) => {
-        console.log('🔥 Botón clickeado!'); // Debug
+        //console.log('🔥 Botón clickeado!'); // Debug
         // No hacer nada aquí, dejar que el form maneje el submit
     };
 
@@ -339,10 +339,10 @@ export default function ServicesManagement() {
     }
 
     const editarItem = (item: ItemSeccion) => {
-        console.log('🔥 Editando item completo:', item);
-        console.log('🔥 Propiedades del item:', Object.keys(item));
-        console.log('🔥 seccion_id del item:', item.seccion_id);
-        console.log('🔥 seccionSeleccionada actual:', seccionSeleccionada);
+        //console.log('🔥 Editando item completo:', item);
+        //console.log('🔥 Propiedades del item:', Object.keys(item));
+        //console.log('🔥 seccion_id del item:', item.seccion_id);
+        //console.log('🔥 seccionSeleccionada actual:', seccionSeleccionada);
 
         setItemEditando(item);
 
@@ -359,7 +359,7 @@ export default function ServicesManagement() {
             es_destacado: Boolean(item.es_destacado)
         };
 
-        console.log('🔥 Form data establecido:', formData);
+        //console.log('🔥 Form data establecido:', formData);
         setFormItemData(formData);
         setModalItemAbierto(true);
     };
@@ -391,7 +391,7 @@ export default function ServicesManagement() {
                     })
 
                     const data = await res.json()
-                    console.log('Respuesta eliminar sección:', data)
+                    //console.log('Respuesta eliminar sección:', data)
 
                     if (!res.ok) {
                         throw new Error(data.message || 'Error al eliminar la sección')
@@ -404,7 +404,7 @@ export default function ServicesManagement() {
                         setItems([])
                     }
                 } catch (error: any) {
-                    console.error('Error al eliminar la sección:', error)
+                    //console.error('Error al eliminar la sección:', error)
                     toast.error(error.message || 'Error al eliminar la sección')
                 }
             }
@@ -422,7 +422,7 @@ export default function ServicesManagement() {
                     })
 
                     const data = await res.json()
-                    console.log('Respuesta eliminar item:', data)
+                    //console.log('Respuesta eliminar item:', data)
 
                     if (!res.ok) {
                         throw new Error(data.error || 'Error al eliminar el item')
@@ -807,7 +807,7 @@ export default function ServicesManagement() {
                             <button
                                 type="button"
                                 onClick={(e) => {
-                                    console.log('🔥 Botón directo clickeado!');
+                                    //console.log('🔥 Botón directo clickeado!');
                                     guardarItem(e as any);
                                 }}
                                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded transition"

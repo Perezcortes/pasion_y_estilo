@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     const user = await getUserFromToken();
 
     if (!user) {
-      return new NextResponse(JSON.stringify({ error: "No autorizado" }), {
+      return new NextResponse(JSON.stringify({ error: "Inicia sesión" }), {
         status: 401,
         headers: {
           "Content-Type": "application/json",
