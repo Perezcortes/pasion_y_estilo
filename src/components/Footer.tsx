@@ -40,22 +40,22 @@ export default function Footer() {
   return (
     <footer className="bg-neutral-900 text-white py-16 px-6 md:px-8">
       <motion.div 
-        className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10"
+        className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
         variants={footerVariants}
       >
-        <motion.div variants={itemVariants}>
+        <motion.div variants={itemVariants} className="md:col-span-1">
           <h3 className="text-2xl font-bold mb-5">
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-indigo-600">
               Pasión<span className="text-white">&</span>Estilo
             </span>
           </h3>
-          <p className="text-gray-400 mb-4">
+          <p className="text-gray-400 mb-6">
             La barbería de lujo que redefine la experiencia masculina con tecnología de vanguardia y atención personalizada.
           </p>
-          <div className="flex gap-4 mt-6">
+          <div className="flex gap-4">
             {socialLinks.map((link, index) => (
               <motion.div 
                 key={index}
@@ -66,7 +66,7 @@ export default function Footer() {
                   href={link.href} 
                   target="_blank" 
                   aria-label={link.label}
-                  className="p-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors duration-300"
+                  className="p-3 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors duration-300"
                 >
                   {link.icon}
                 </Link>
@@ -76,60 +76,39 @@ export default function Footer() {
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <h4 className="text-lg font-semibold mb-5 text-gray-200">Horario</h4>
-          <ul className="space-y-3 text-gray-400">
+          <h4 className="text-xl font-semibold mb-6 text-gray-200">Horario</h4>
+          <ul className="space-y-4 text-gray-400">
             <li className="flex items-center gap-3">
-              <Clock size={18} className="text-indigo-400" />
-              Lunes - Viernes: 9:00 - 20:00
+              <Clock size={20} className="text-indigo-400" />
+              <span>Lunes - Viernes: 9:00 - 20:00</span>
             </li>
             <li className="flex items-center gap-3">
-              <Clock size={18} className="text-indigo-400" />
-              Sábados: 10:00 - 18:00
+              <Clock size={20} className="text-indigo-400" />
+              <span>Sábados: 10:00 - 18:00</span>
             </li>
             <li className="flex items-center gap-3">
-              <Clock size={18} className="text-indigo-400" />
-              Domingos: Cerrado
+              <Clock size={20} className="text-indigo-400" />
+              <span>Domingos: Cerrado</span>
             </li>
           </ul>
         </motion.div>
 
         <motion.div variants={itemVariants}>
-          <h4 className="text-lg font-semibold mb-5 text-gray-200">Contacto</h4>
-          <ul className="space-y-3 text-gray-400">
+          <h4 className="text-xl font-semibold mb-6 text-gray-200">Contacto</h4>
+          <ul className="space-y-4 text-gray-400">
             <li className="flex items-center gap-3">
-              <MapPin size={18} className="text-indigo-400" />
-              Av. Luxury 123, Ciudad Elegante
+              <MapPin size={20} className="text-indigo-400" />
+              <span>Av. Luxury 123, Ciudad Elegante</span>
             </li>
-            <li className="flex items-center gap-3 hover:text-white transition-colors">
-              <Phone size={18} className="text-indigo-400" />
-              +52 953 000 0000
+            <li className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
+              <Phone size={20} className="text-indigo-400" />
+              <span>+52 953 000 0000</span>
             </li>
-            <li className="flex items-center gap-3 hover:text-white transition-colors">
-              <Mail size={18} className="text-indigo-400" />
-              contacto@pasionyestilo.com
+            <li className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
+              <Mail size={20} className="text-indigo-400" />
+              <span>contacto@pasionyestilo.com</span>
             </li>
           </ul>
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <h4 className="text-lg font-semibold mb-5 text-gray-200">Newsletter</h4>
-          <p className="text-gray-400 mb-4">
-            Suscríbete para recibir promociones exclusivas y consejos de estilo.
-          </p>
-          <form className="flex flex-col gap-3">
-            <input 
-              type="email" 
-              placeholder="Tu email" 
-              className="px-4 py-2 bg-gray-800 border border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 text-white"
-              required
-            />
-            <button 
-              type="submit"
-              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded transition-all duration-300"
-            >
-              Suscribirse
-            </button>
-          </form>
         </motion.div>
       </motion.div>
 

@@ -46,7 +46,7 @@ export default function TermsPage() {
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, amount: 0.25 }}
-      className="max-w-4xl mx-auto px-4 sm:px-6 py-12 sm:py-20"
+      className="max-w-4xl mx-auto px-4 sm:px-6 py-28 sm:py-20"
     >
       <motion.div
         variants={fadeIn('up', 'spring', 0.2, 1)}
@@ -77,25 +77,6 @@ export default function TermsPage() {
           </motion.div>
         ))}
       </div>
-
-      <motion.div
-        variants={fadeIn('up', 'spring', 0.8, 1)}
-        className="mt-12 sm:mt-16 p-5 sm:p-6 bg-gray-900 rounded-lg text-center"
-      >
-        <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-white">
-          ¿Tienes preguntas sobre nuestros términos?
-        </h3>
-        <p className="text-sm sm:text-base text-gray-300 mb-4 sm:mb-6">
-          Contáctanos en <span className="text-blue-400">contacto@barberia.com</span> o al <span className="text-blue-400">+52 953 123 4567</span>
-        </p>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="px-5 py-2 sm:px-6 sm:py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-full transition-all duration-300 shadow-lg hover:shadow-red-500/30 text-sm sm:text-base"
-        >
-          Contactar Ahora
-        </motion.button>
-      </motion.div>
     </motion.main>
   )
 }
