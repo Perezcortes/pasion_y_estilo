@@ -35,10 +35,10 @@ const navItems: NavItem[] = [
     allowedRoles: ['ADMIN']
   },
   {
-    name: 'Configuración',
+    name: 'Clientes Fieles',
     icon: <FiSettings className="mr-3" />,
     tab: 'settings',
-    allowedRoles: ['ADMIN']
+    allowedRoles: ['ADMIN', 'BARBERO']
   }
 ]
 

@@ -219,12 +219,12 @@ export default function ContactPage() {
                 <div>
                   <h3 className="text-xl font-semibold text-white font-barber">WhatsApp</h3>
                   <a
-                    href="https://wa.me/1234567890"
+                    href="https://wa.me/9531861790"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-400 hover:text-red-500 transition-colors font-vintage"
                   >
-                    +1 234 567 890
+                    +52 953 186 1790
                   </a>
                 </div>
               </div>
@@ -251,8 +251,8 @@ export default function ContactPage() {
                 <div>
                   <h3 className="text-xl font-semibold text-white font-barber">Dirección</h3>
                   <p className="text-gray-400 font-vintage">
-                    Calle Principal #123,<br />
-                    Colonia Centro, Ciudad
+                    Calle 16 de septiembre #6,<br />
+                    Colonia Centro, Huajuapan de León
                   </p>
                 </div>
               </div>
@@ -264,9 +264,9 @@ export default function ContactPage() {
                 <div>
                   <h3 className="text-xl font-semibold text-white font-barber">Horario</h3>
                   <p className="text-gray-400 font-vintage">
-                    Lunes a Viernes: 9:00 AM - 7:00 PM<br />
-                    Sábados: 10:00 AM - 5:00 PM<br />
-                    Domingos: Cerrado
+                    Lunes a Viernes: 8:00 AM - 9:00 PM<br />
+                    Sábados: 8:00 AM - 9:00 PM<br />
+                    Domingos: Varia el horario
                   </p>
                 </div>
               </div>
@@ -276,9 +276,9 @@ export default function ContactPage() {
               <h3 className="text-xl font-semibold mb-4 text-white font-barber">Redes Sociales</h3>
               <div className="flex gap-4">
                 {[
-                  { name: 'Instagram', icon: <FaInstagram className="text-xl" />, url: '#' },
-                  { name: 'Facebook', icon: <FaFacebookF className="text-xl" />, url: '#' },
-                  { name: 'TikTok', icon: <FaTiktok className="text-xl" />, url: '#' }
+                  { name: 'Instagram', icon: <FaInstagram className="text-xl" />, url: 'https://www.instagram.com/pasionyestilo_2020?igsh=MWpwd2hueXk0bGxxOA==' },
+                  { name: 'Facebook', icon: <FaFacebookF className="text-xl" />, url: 'https://www.facebook.com/share/1B3XsPEhgj/' },
+                  { name: 'TikTok', icon: <FaTiktok className="text-xl" />, url: 'https://www.facebook.com/share/1B3XsPEhgj/' }
                 ].map((social, index) => (
                   <motion.a
                     key={index}

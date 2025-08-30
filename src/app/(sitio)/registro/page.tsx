@@ -234,7 +234,7 @@ export default function RegisterPage() {
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-600 rounded bg-gray-700"
               />
               <label htmlFor="terms" className="ml-2 block text-sm text-gray-300">
-                Acepto los <Link href="/terminos" className="text-blue-400 hover:text-blue-300">Términos y Condiciones</Link> y la <Link href="/privacidad" className="text-blue-400 hover:text-blue-300">Política de Privacidad</Link>
+                Acepto los <Link href="/terminos-y-condiciones" className="text-blue-400 hover:text-blue-300">Términos y Condiciones</Link> y la <Link href="/politica-privacidad" className="text-blue-400 hover:text-blue-300">Política de Privacidad</Link>
               </label>
             </div>
 

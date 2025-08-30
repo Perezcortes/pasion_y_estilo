@@ -749,7 +749,7 @@ export default function AgendarCitaPage() {
                       <h3 className="text-lg font-semibold text-white font-barber">Horario de Atención</h3>
                       <p className="text-gray-400 font-vintage">
                         Lunes a Viernes: 8:00 AM - 9:00 PM<br />
-                        Sábados: 9:00 AM - 7:00 PM<br />
+                        Sábados: 8:00 AM - 9:00 PM<br />
                         Domingos: Opcional (varía según disponibilidad)
                       </p>
                     </div>
@@ -762,7 +762,7 @@ export default function AgendarCitaPage() {
                     <div>
                       <h3 className="text-lg font-semibold text-white font-barber">Política de Cancelación</h3>
                       <p className="text-gray-400 font-vintage">
-                        Por favor cancela con al menos 24 horas de anticipación.
+                        Por favor cancela con al menos 24 horas de anticipación (Consulta a tu barbero).
                       </p>
                     </div>
                   </div>

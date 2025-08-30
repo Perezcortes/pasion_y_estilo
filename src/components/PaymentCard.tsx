@@ -10,9 +10,9 @@ export default function PaymentCard() {
 
   // Datos bancarios (estos deberían venir de una configuración o base de datos)
   const bankData = {
-    banco: 'BBVA México',
-    numeroCuenta: '1234567890123456',
-    titular: 'Pasión y Estilo Barbershop',
+    banco: 'Banco Azteca',
+    numeroCuenta: '5263540138421371',
+    titular: 'Jorge Miguel Herrera Mendez',
     clabe: '012345678901234567',
     concepto: 'Pago de servicio - Barbería'
   }
@@ -141,7 +141,7 @@ export default function PaymentCard() {
 
       {/* Instrucciones */}
       <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
-        <p className="text-yellow-300 text-sm font-medium mb-2">📝 Instrucciones importantes:</p>
+        <p className="text-yellow-300 text-sm font-medium mb-2">Instrucciones importantes:</p>
         <ul className="text-yellow-200 text-xs space-y-1">
           <li>• Realiza la transferencia por el monto exacto del servicio</li>
           <li>• Guarda el comprobante de transferencia</li>

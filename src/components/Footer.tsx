@@ -8,12 +8,12 @@ export default function Footer() {
   const socialLinks = [
     {
       icon: <Facebook className="hover:text-blue-500 transition" />,
-      href: "https://facebook.com",
+      href: "https://www.facebook.com/share/1B3XsPEhgj/",
       label: "Facebook"
     },
     {
       icon: <Instagram className="hover:text-pink-500 transition" />,
-      href: "https://instagram.com",
+      href: "https://www.instagram.com/pasionyestilo_2020?igsh=MWpwd2hueXk0bGxxOA==",
       label: "Instagram"
     },
     {
@@ -80,15 +80,15 @@ export default function Footer() {
           <ul className="space-y-4 text-gray-400">
             <li className="flex items-center gap-3">
               <Clock size={20} className="text-indigo-400" />
-              <span>Lunes - Viernes: 9:00 - 20:00</span>
+              <span>Lunes - Viernes: 8:00 - 21:00</span>
             </li>
             <li className="flex items-center gap-3">
               <Clock size={20} className="text-indigo-400" />
-              <span>Sábados: 10:00 - 18:00</span>
+              <span>Sábados: 8:00 - 21:00</span>
             </li>
             <li className="flex items-center gap-3">
               <Clock size={20} className="text-indigo-400" />
-              <span>Domingos: Cerrado</span>
+              <span>Domingos: Varia el horario</span>
             </li>
           </ul>
         </motion.div>
@@ -98,11 +98,11 @@ export default function Footer() {
           <ul className="space-y-4 text-gray-400">
             <li className="flex items-center gap-3">
               <MapPin size={20} className="text-indigo-400" />
-              <span>Av. Luxury 123, Ciudad Elegante</span>
+              <span>Calle 16 de Septiembre Huajuapan de León</span>
             </li>
             <li className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
               <Phone size={20} className="text-indigo-400" />
-              <span>+52 953 000 0000</span>
+              <span>+52 953 186 1790</span>
             </li>
             <li className="flex items-center gap-3 hover:text-white transition-colors cursor-pointer">
               <Mail size={20} className="text-indigo-400" />
